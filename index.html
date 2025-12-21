@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="orange">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Крестики-нолики</title>
+  <title>Tic-Tac-Toe</title>
   <style>
     :root{
       --bg:#0b0f18;
@@ -11,34 +11,43 @@
       --muted:#94a3b8;
       --text:#e5e7eb;
       --border:#243044;
-      --accent:#60a5fa;
+
+      --accent:#ff8a00; /* orange default */
+      --accent2:#ffb300;
       --win:#22c55e;
       --danger:#ef4444;
 
       --cellBg: rgba(2,6,23,.35);
       --cellHover: rgba(2,6,23,.50);
       --shadow: rgba(0,0,0,.45);
+
+      --radius:18px;
+      --radius2:14px;
     }
 
-    /* Theme presets (25) */
+    /* Theme presets (19) + orange requested */
+    html[data-theme="orange"]{
+      --bg:#0b0f18; --card:#111827;
+      --accent:#ff8a00; --accent2:#ffb300;
+    }
     html[data-theme="blue"]{
-      --bg:#0b0f18; --card:#111827; --accent:#60a5fa;
+      --bg:#0b0f18; --card:#111827;
+      --accent:#60a5fa; --accent2:#93c5fd;
     }
     html[data-theme="neon"]{
-      --bg:#05060a; --card:#0c1220; --accent:#22d3ee;
+      --bg:#05060a; --card:#0c1220;
+      --accent:#22d3ee; --accent2:#a78bfa;
       --win:#a3e635;
     }
     html[data-theme="pastel"]{
-      --bg:#0b1020; --card:#121a33; --accent:#a78bfa;
-      --win:#34d399;
+      --bg:#0b1020; --card:#121a33;
+      --accent:#a78bfa; --accent2:#34d399;
       --muted:#a7b0c7;
     }
-    /* Retro mode palette (30) */
-    html.retro{
-      --bg:#07090f; --card:#0b1020; --accent:#fbbf24;
-      --text:#eaffd0; --muted:#9ca3af; --border:#3b3b3b;
-      --cellBg: rgba(0,0,0,.35);
-      --cellHover: rgba(0,0,0,.55);
+    html[data-theme="mono"]{
+      --bg:#0a0a0a; --card:#141414;
+      --accent:#e5e7eb; --accent2:#cbd5e1;
+      --muted:#9ca3af;
     }
 
     *{box-sizing:border-box}
@@ -53,49 +62,79 @@
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
       padding:18px;
     }
-    html.retro body{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      image-rendering: pixelated;
-    }
+
     .app{
-      width:min(860px, 100%);
+      width:min(980px, 100%);
       background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
       border:1px solid var(--border);
-      border-radius:18px;
-      padding:16px;
+      border-radius:var(--radius);
+      padding:14px;
       box-shadow: 0 20px 60px var(--shadow);
       backdrop-filter: blur(10px);
     }
-    header{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      justify-content:space-between;
-      margin-bottom:12px;
-      flex-wrap:wrap;
-    }
-    h1{
-      font-size:18px;
-      margin:0;
-      letter-spacing:.2px;
-    }
-    .sub{
-      margin-top:4px;
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.35;
-    }
 
-    .controls{
+    /* Top nav */
+    .topbar{
       display:flex;
+      justify-content:space-between;
+      align-items:center;
       gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .logo{
+      width:38px;height:38px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background: radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.18), rgba(255,255,255,.06));
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;
+      color:var(--accent);
+    }
+    .titleWrap{line-height:1.1}
+    .title{font-size:16px;font-weight:800;margin:0}
+    .subtitle{font-size:12.5px;color:var(--muted);margin-top:4px}
+
+    .actions{
+      display:flex;
+      gap:8px;
       flex-wrap:wrap;
       align-items:center;
       justify-content:flex-end;
     }
+
+    button, select, input{
+      border:1px solid var(--border);
+      background: rgba(17,24,39,.85);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+      transition: transform .04s ease, border-color .2s ease, background .2s ease;
+    }
+    button{cursor:pointer}
+    button:hover, select:hover{border-color:#385075}
+    button:active{transform: translateY(1px)}
+    button.primary{
+      border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+      background: color-mix(in srgb, var(--accent) 18%, rgba(17,24,39,.85));
+    }
+    button.ghost{
+      background: rgba(17,24,39,.55);
+    }
+    button.danger{
+      border-color: rgba(239,68,68,.55);
+      background: rgba(239,68,68,.12);
+    }
     .pill{
       border:1px solid var(--border);
-      background: rgba(17,24,39,.6);
+      background: rgba(17,24,39,.55);
       border-radius:999px;
       padding:7px 10px;
       font-size:13px;
@@ -103,133 +142,8 @@
       gap:8px;
       align-items:center;
       white-space:nowrap;
-    }
-    select, button, input[type="checkbox"]{
-      border:1px solid var(--border);
-      background: rgba(17,24,39,.85);
-      color:var(--text);
-      border-radius:12px;
-      padding:10px 12px;
-      font-size:14px;
-      cursor:pointer;
-      outline:none;
-      transition: transform .04s ease, border-color .2s ease, background .2s ease;
-    }
-    select{padding:9px 10px; border-radius:10px}
-    button:hover, select:hover{border-color:#385075}
-    button:active{transform: translateY(1px)}
-    button.primary{
-      border-color: rgba(96,165,250,.55);
-      background: rgba(96,165,250,.16);
-    }
-    button.danger{
-      border-color: rgba(239,68,68,.55);
-      background: rgba(239,68,68,.12);
-    }
-    button.ghost{
-      background: rgba(17,24,39,.55);
-    }
-
-    .layout{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:12px;
-      margin-top:10px;
-    }
-    @media (max-width: 860px){
-      .layout{grid-template-columns: 1fr}
-    }
-
-    .panel{
-      border:1px solid var(--border);
-      border-radius:16px;
-      background: rgba(17,24,39,.55);
-      padding:12px;
-    }
-
-    .status{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:12px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      background: rgba(17,24,39,.55);
-      font-size:14px;
-      margin-bottom:10px;
-      flex-wrap:wrap;
-    }
-    .status b{color:var(--accent)}
-    .status .win b{color:var(--win)}
-    .status .lose b{color:var(--danger)}
-
-    .grid{
-      width:100%;
-      aspect-ratio: 1 / 1;
-      display:grid;
-      gap:10px;
-      padding:10px;
-      border:1px solid var(--border);
-      border-radius:16px;
-      background: rgba(17,24,39,.55);
-      user-select:none;
-    }
-
-    .cell{
-      border:1px solid var(--border);
-      border-radius:14px;
-      background: var(--cellBg);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: clamp(28px, 6.8vw, 64px);
-      font-weight:900;
-      user-select:none;
-      cursor:pointer;
-      transition: background .15s ease, border-color .2s ease, transform .08s ease;
-      position:relative;
-      overflow:hidden;
-    }
-    .cell:hover{border-color:#3a537a; background: var(--cellHover)}
-    .cell:active{transform: translateY(1px) scale(.99)}
-    .cell.disabled{cursor:not-allowed; opacity:.85}
-    .mark-x{color:#93c5fd}
-    .mark-o{color:#fca5a5}
-
-    /* (5) Animations */
-    .cell.pop{
-      animation: pop .14s ease-out;
-    }
-    @keyframes pop{
-      0%{transform: scale(.96)}
-      100%{transform: scale(1)}
-    }
-
-    /* (6) win highlight */
-    .cell.win{
-      border-color: rgba(34,197,94,.65);
-      background: rgba(34,197,94,.10);
-      box-shadow: inset 0 0 0 1px rgba(34,197,94,.25);
-    }
-
-    .scoreRow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-top:10px;
       color:var(--muted);
-      font-size:13px;
     }
-    .badge{
-      border:1px solid var(--border);
-      border-radius:999px;
-      padding:6px 10px;
-      background: rgba(17,24,39,.55);
-      color:var(--text);
-    }
-    .badge b{color:var(--accent)}
     .kbd{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size:12px;
@@ -241,246 +155,609 @@
       color: var(--text);
     }
 
-    .small{
-      font-size:12.5px;
-      color:var(--muted);
-      line-height:1.4;
+    /* Views */
+    .view{display:none}
+    .view.active{display:block}
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:12px;
     }
-    .hr{
-      height:1px;
-      background: rgba(255,255,255,.07);
-      margin:10px 0;
+    @media (max-width: 920px){
+      .grid2{grid-template-columns:1fr}
     }
 
-    /* Retro border vibe (30) */
-    html.retro .app,
-    html.retro .panel,
-    html.retro .status,
-    html.retro .grid,
-    html.retro .cell{
-      border-radius: 8px;
+    .card{
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      background: rgba(17,24,39,.55);
+      padding:12px;
     }
+    .cardTitle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+      font-weight:800;
+    }
+    .hint{font-size:12.5px;color:var(--muted);line-height:1.35}
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    @media (max-width: 520px){
+      .row{grid-template-columns:1fr}
+    }
+    .field label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    input[type="text"]{
+      width:100%;
+      border-radius:12px;
+    }
+
+    /* Game area */
+    .statusBar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .who{
+      font-size:14px;
+      color:var(--muted);
+    }
+    .who b{
+      color:var(--accent);
+    }
+    .who .sym{
+      font-weight:900;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(17,24,39,.55);
+      color:var(--text);
+      margin-left:6px;
+    }
+
+    /* Progress bar (30) */
+    .progressWrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--muted);
+      font-size:12.5px;
+      min-width: 220px;
+      justify-content:flex-end;
+    }
+    .bar{
+      height:10px;
+      width:160px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(2,6,23,.35);
+      overflow:hidden;
+    }
+    .bar > div{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .2s ease;
+    }
+
+    .board{
+      width:100%;
+      aspect-ratio:1/1;
+      display:grid;
+      gap:8px;
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      background: rgba(17,24,39,.55);
+      user-select:none;
+      overflow:hidden;
+    }
+
+    .cell{
+      border:1px solid var(--border);
+      border-radius:var(--radius2);
+      background: var(--cellBg);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      cursor:pointer;
+      transition: background .15s ease, border-color .2s ease, transform .08s ease;
+      position:relative;
+      overflow:hidden;
+      line-height:1;
+      font-size: clamp(14px, 4.6vw, 44px);
+    }
+    .cell:hover{border-color:#3a537a; background: var(--cellHover)}
+    .cell:active{transform: translateY(1px) scale(.99)}
+    .cell.disabled{cursor:not-allowed; opacity:.85}
+
+    /* (5) animation */
+    .cell.pop{animation: pop .14s ease-out;}
+    @keyframes pop{0%{transform: scale(.96)}100%{transform: scale(1)}}
+
+    /* winner highlight (6) */
+    .cell.win{
+      border-color: rgba(34,197,94,.65);
+      background: rgba(34,197,94,.12);
+      box-shadow: inset 0 0 0 1px rgba(34,197,94,.25);
+    }
+
+    /* compact stats (22) */
+    .miniStats{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12.5px;
+    }
+    .badge{
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+      background: rgba(17,24,39,.55);
+      color:var(--text);
+    }
+    .badge b{color:var(--accent)}
+    details{
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:10px;
+      background: rgba(2,6,23,.18);
+      margin-top:10px;
+    }
+    summary{
+      cursor:pointer;
+      color:var(--muted);
+      font-weight:700;
+      list-style:none;
+    }
+    summary::-webkit-details-marker{display:none}
+    .smallGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+      margin-top:10px;
+      font-size:12.5px;
+      color:var(--muted);
+    }
+    .smallGrid b{color:var(--text)}
+    @media (max-width:520px){ .smallGrid{grid-template-columns:1fr} }
+
+    /* overlays */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:50;
+    }
+    .overlay.active{display:flex}
+    .modal{
+      width:min(720px, 100%);
+      border:1px solid var(--border);
+      background: rgba(17,24,39,.92);
+      border-radius:18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.6);
+      padding:14px;
+    }
+    .modalHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .modalHead b{font-size:15px}
+    .modalBody{color:var(--muted); font-size:13px; line-height:1.45}
+    .modalBody ul{margin:10px 0 0 18px}
+    .modalFoot{display:flex; gap:8px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap}
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform: translateX(-50%);
+      background: rgba(17,24,39,.9);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      font-size:13px;
+      display:none;
+      z-index:60;
+      max-width:min(680px, 92vw);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .toast.show{display:block}
   </style>
 </head>
 <body>
-  <div class="app" role="application" aria-label="Игра Крестики-нолики">
-    <header>
-      <div>
-        <h1>Крестики-нолики</h1>
-        <div class="sub">
-          Кликни по клетке или нажми <span class="kbd">1–9</span> (для 3×3).<br/>
-          Для 4×4/5×5 — кликай мышкой (или тапай).
+  <div class="app" role="application">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">XO</div>
+        <div class="titleWrap">
+          <div class="title">Tic-Tac-Toe</div>
+          <div class="subtitle" id="subLine">Меню → Настройки → Играть</div>
         </div>
       </div>
-
-      <div class="controls">
-        <div class="pill" title="Режим игры">
-          <span style="color:var(--muted)">Режим:</span>
-          <select id="modeSelect" aria-label="Режим игры">
-            <option value="pvp">Игрок vs Игрок</option>
-            <option value="bot">Игрок vs Бот</option>
-          </select>
-        </div>
-
-        <div class="pill" id="aiPill" style="display:none" title="Уровень бота">
-          <span style="color:var(--muted)">Бот:</span>
-          <select id="aiSelect" aria-label="Уровень бота">
-            <option value="easy">Лёгкий</option>
-            <option value="medium">Средний</option>
-            <option value="hard">Сложный</option>
-          </select>
-        </div>
-
-        <div class="pill" title="Размер поля">
-          <span style="color:var(--muted)">Поле:</span>
-          <select id="sizeSelect" aria-label="Размер поля">
-            <option value="3">3×3</option>
-            <option value="4">4×4</option>
-            <option value="5">5×5</option>
-          </select>
-        </div>
-
-        <div class="pill" title="Кто ходит первым">
-          <span style="color:var(--muted)">Первый:</span>
-          <select id="firstSelect" aria-label="Кто ходит первым">
-            <option value="X">X</option>
-            <option value="O">O</option>
-          </select>
-        </div>
-
-        <div class="pill" title="Тема">
-          <span style="color:var(--muted)">Тема:</span>
-          <select id="themeSelect" aria-label="Тема">
-            <option value="blue">Blue</option>
-            <option value="neon">Neon</option>
-            <option value="pastel">Pastel</option>
-          </select>
-        </div>
-
-        <button class="ghost" id="retroBtn" title="Ретро-режим (30)">Retro</button>
-        <button class="ghost" id="soundBtn" title="Звук (7)">Sound: On</button>
-
-        <button class="ghost" id="undoBtn" title="Отменить ход (8)">Undo</button>
-        <button class="primary" id="newGameBtn">Новая игра</button>
-        <button class="danger" id="resetAllBtn">Сброс всего</button>
+      <div class="actions">
+        <div class="pill" id="pillState">Offline OK • Local Save</div>
+        <button class="ghost" id="btnHome">Меню</button>
+        <button class="ghost" id="btnRulesTop">Правила</button>
       </div>
-    </header>
+    </div>
 
-    <div class="layout">
-      <div>
-        <div class="status" aria-live="polite">
-          <div id="statusText">Ходит: <b id="turnText">X</b></div>
-          <div class="small" id="hintText">Цель: <b id="goalText">3</b> в ряд</div>
+    <!-- VIEW: HOME (1) -->
+    <section class="view active" id="viewHome">
+      <div class="grid2">
+        <div class="card">
+          <div class="cardTitle">
+            <span>Главное меню</span>
+          </div>
+          <div class="hint">
+            Компактно: все детали в «Правилах», тут — только настройки и старт.
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+            <button class="primary" id="btnGoSettings">Настройки</button>
+            <button class="primary" id="btnQuickStart">Быстрый старт</button>
+            <button class="ghost" id="btnContinue" style="display:none;">Продолжить</button>
+            <button class="ghost" id="btnLeaderboard">Результаты</button>
+          </div>
+
+          <details style="margin-top:12px;">
+            <summary>Подсказки (26)</summary>
+            <div class="smallGrid">
+              <div>• Для 3×3 можно ходить клавишами <span class="kbd">1–9</span></div>
+              <div>• Undo: <span class="kbd">U</span>, Restart: <span class="kbd">R</span></div>
+              <div>• Если не обновилось — сделай <span class="kbd">Cmd+Shift+R</span></div>
+              <div>• Большие поля: цель автоматически меняется</div>
+            </div>
+          </details>
         </div>
-        <div class="grid" id="grid" aria-label="Игровое поле"></div>
 
-        <div class="scoreRow" aria-label="Статистика (16)">
-          <span class="badge">Победы X: <b id="winsX">0</b></span>
-          <span class="badge">Победы O: <b id="winsO">0</b></span>
-          <span class="badge">Ничьи: <b id="draws">0</b></span>
-          <span class="badge">Всего игр: <b id="gamesTotal">0</b></span>
+        <div class="card">
+          <div class="cardTitle"><span>Кратко о текущих настройках</span></div>
+          <div class="smallGrid">
+            <div>Режим: <b id="sumMode">—</b></div>
+            <div>Поле: <b id="sumSize">—</b></div>
+            <div>Цель: <b id="sumGoal">—</b> в ряд</div>
+            <div>Тема: <b id="sumTheme">—</b></div>
+            <div>Игроки: <b id="sumPlayers">—</b></div>
+            <div>ИИ: <b id="sumAI">—</b></div>
+          </div>
+          <div class="hint" style="margin-top:10px;">
+            Всё сохраняется локально (20). Онлайн режим здесь не нужен — игра работает без сервера.
+          </div>
         </div>
       </div>
+    </section>
 
-      <div class="panel">
-        <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
-          <div style="font-weight:700">Аналитика (23)</div>
-          <button class="ghost" id="resetAnalyticsBtn" title="Сбросить аналитику (23)">Reset</button>
+    <!-- VIEW: SETTINGS (2,3,4,5,6,7,16,17,19,22,25) -->
+    <section class="view" id="viewSettings">
+      <div class="grid2">
+        <div class="card">
+          <div class="cardTitle"><span>Настройки игры</span></div>
+
+          <div class="row">
+            <div class="field">
+              <label>Режим (2)</label>
+              <select id="mode">
+                <option value="pvp">Игрок vs Игрок</option>
+                <option value="bot">Игрок vs ИИ</option>
+                <option value="3p">3 игрока</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Размер поля (4) — до 10×10</label>
+              <select id="size"></select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field" id="aiField">
+              <label>Сложность ИИ (5,25)</label>
+              <select id="ai">
+                <option value="easy">Лёгкий</option>
+                <option value="medium">Средний</option>
+                <option value="hard">Сложный</option>
+                <option value="expert">Эксперт</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Тема (6,19)</label>
+              <select id="theme">
+                <option value="orange">Orange</option>
+                <option value="blue">Blue</option>
+                <option value="neon">Neon</option>
+                <option value="pastel">Pastel</option>
+                <option value="mono">Mono</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Звук (15)</label>
+              <select id="sound">
+                <option value="on">Вкл</option>
+                <option value="off">Выкл</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Цель (16) — авто</label>
+              <div class="pill">Текущая цель: <b id="goalNow" style="color:var(--text)">—</b> в ряд</div>
+            </div>
+          </div>
+
+          <div class="hr" style="height:1px;background:rgba(255,255,255,.07);margin:12px 0;"></div>
+
+          <div class="cardTitle" style="margin-bottom:8px;">
+            <span>Имена игроков (3,17)</span>
+            <span class="hint">коротко, без лишнего</span>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Игрок 1 (X)</label>
+              <input id="p1" type="text" placeholder="например: Alex" maxlength="16" />
+            </div>
+            <div class="field">
+              <label id="p2Label">Игрок 2 (O)</label>
+              <input id="p2" type="text" placeholder="например: Timur" maxlength="16" />
+            </div>
+          </div>
+
+          <div class="row" id="p3Row" style="display:none;">
+            <div class="field">
+              <label>Игрок 3 (△)</label>
+              <input id="p3" type="text" placeholder="например: Aziz" maxlength="16" />
+            </div>
+            <div class="field">
+              <label>Кто начинает</label>
+              <select id="first">
+                <option value="0">Игрок 1</option>
+                <option value="1">Игрок 2</option>
+                <option value="2">Игрок 3</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" id="firstRow">
+            <div class="field">
+              <label>Кто начинает</label>
+              <select id="first2">
+                <option value="0">Игрок 1</option>
+                <option value="1">Игрок 2</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Автосейв (20)</label>
+              <div class="pill">Вкл всегда • сохраняем после каждого хода</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+            <button class="primary" id="btnStart">Начать игру</button>
+            <button class="ghost" id="btnBackHome2">Назад</button>
+          </div>
+
+          <details>
+            <summary>Мини-пояснения (12,22)</summary>
+            <div class="smallGrid">
+              <div>• UI специально компактный: важное — в правилах (11).</div>
+              <div>• Большие поля: ИИ упрощается, чтобы игра не тормозила.</div>
+              <div>• Три игрока: цель такая же, ход по кругу X→O→△.</div>
+              <div>• Результаты сохраняются локально (18).</div>
+            </div>
+          </details>
         </div>
-        <div class="hr"></div>
-        <div class="small">
-          <div>Всего ходов: <b id="movesTotal">0</b></div>
-          <div>Среднее ходов за игру: <b id="avgMoves">0</b></div>
-          <div>Самая популярная клетка (3×3): <b id="topCell">—</b></div>
-          <div>Win-rate X: <b id="wrX">0%</b> · O: <b id="wrO">0%</b> · Draw: <b id="wrD">0%</b></div>
-          <div class="hr"></div>
-          <div>Подсказка: после обновлений в GitHub — <span class="kbd">Commit</span>, и Pages обновится автоматически.</div>
+
+        <div class="card">
+          <div class="cardTitle"><span>Быстрый обзор правил (11,16)</span></div>
+          <div class="hint">
+            <b>Цель</b>: собрать <b id="rulesGoalMini">—</b> в ряд по горизонтали/вертикали/диагонали. <br/>
+            <b>Размер</b>: до 10×10. <br/>
+            <b>Undo</b>: можно отменять ход (8). <br/>
+            Подробные правила — в отдельном экране.
+          </div>
+
+          <div class="hr" style="height:1px;background:rgba(255,255,255,.07);margin:12px 0;"></div>
+
+          <div class="cardTitle"><span>Аналитика (14,23)</span></div>
+          <div class="hint">
+            Считаем: среднее число ходов, популярные клетки (для 3×3), win-rate. Всё можно сбросить.
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+            <button class="ghost" id="btnResetStats">Сбросить статистику</button>
+            <button class="ghost" id="btnRulesFromSettings">Открыть правила</button>
+          </div>
         </div>
+      </div>
+    </section>
+
+    <!-- VIEW: GAME (8,10,12,13,14,15,16,17,20,21,22,23,27,30) -->
+    <section class="view" id="viewGame">
+      <div class="grid2">
+        <div>
+          <div class="statusBar">
+            <div class="who" id="whoLine">Ходит: <b>—</b> <span class="sym">—</span></div>
+            <div class="progressWrap">
+              <span id="progText">0%</span>
+              <div class="bar"><div id="progFill"></div></div>
+            </div>
+          </div>
+
+          <div class="board" id="board"></div>
+
+          <div class="miniStats">
+            <span class="badge">X: <b id="wX">0</b></span>
+            <span class="badge">O: <b id="wO">0</b></span>
+            <span class="badge">△: <b id="wT">0</b></span>
+            <span class="badge">Ничьи: <b id="wD">0</b></span>
+            <span class="badge">Игры: <b id="wG">0</b></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">
+            <span>Мини-меню (10)</span>
+            <button class="ghost" id="btnPause">Пауза</button>
+          </div>
+
+          <div class="smallGrid">
+            <div>Режим: <b id="gMode">—</b></div>
+            <div>Поле: <b id="gSize">—</b></div>
+            <div>Цель: <b id="gGoal">—</b></div>
+            <div>ИИ: <b id="gAI">—</b></div>
+          </div>
+
+          <details>
+            <summary>Статистика (14,23)</summary>
+            <div class="smallGrid">
+              <div>Всего ходов: <b id="aMoves">0</b></div>
+              <div>Среднее/игра: <b id="aAvg">0</b></div>
+              <div>Win-rate X: <b id="aWrX">0%</b></div>
+              <div>Win-rate O: <b id="aWrO">0%</b></div>
+              <div>Win-rate △: <b id="aWrT">0%</b></div>
+              <div>Win-rate Draw: <b id="aWrD">0%</b></div>
+              <div>Топ-клетка (3×3): <b id="aTop">—</b></div>
+              <div>Подсказка: Undo — <span class="kbd">U</span></div>
+            </div>
+          </details>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+            <button class="ghost" id="btnUndo">Undo</button>
+            <button class="ghost" id="btnRestart">Restart</button>
+            <button class="ghost" id="btnBackHome3">В меню</button>
+          </div>
+
+          <details>
+            <summary>Подсказки (13,26)</summary>
+            <div class="hint">
+              • Для 3×3: клавиши <span class="kbd">1–9</span>.<br/>
+              • Большие поля: кликай/тапай.<br/>
+              • ИИ «Эксперт» не идеальный на 10×10 (иначе тормозит), но играет умно.
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: RULES (11) -->
+    <section class="view" id="viewRules">
+      <div class="card">
+        <div class="cardTitle"><span>Правила (11)</span></div>
+        <div class="hint" id="rulesText"></div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+          <button class="ghost" id="btnBackFromRules">Назад</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: LEADERBOARD (18) -->
+    <section class="view" id="viewLB">
+      <div class="card">
+        <div class="cardTitle">
+          <span>Результаты (18)</span>
+          <button class="ghost" id="btnClearLB">Очистить</button>
+        </div>
+        <div class="hint">Локальная таблица последних 15 результатов (имена + режим + поле + победитель).</div>
+        <div id="lbList" style="margin-top:12px;"></div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+          <button class="ghost" id="btnBackFromLB">Назад</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- OVERLAY: PAUSE -->
+  <div class="overlay" id="overlayPause">
+    <div class="modal">
+      <div class="modalHead">
+        <b>Пауза</b>
+        <button class="ghost" id="btnClosePause">Закрыть</button>
+      </div>
+      <div class="modalBody">
+        <ul>
+          <li><b>Undo</b> — отменить ход (в режиме vs AI откатываем 2 хода, если возможно).</li>
+          <li><b>Restart</b> — новая игра с теми же настройками.</li>
+          <li><b>Меню</b> — вернуться к настройкам/старту.</li>
+        </ul>
+      </div>
+      <div class="modalFoot">
+        <button class="ghost" id="btnUndo2">Undo</button>
+        <button class="ghost" id="btnRestart2">Restart</button>
+        <button class="danger" id="btnToMenuFromPause">В меню</button>
       </div>
     </div>
   </div>
 
+  <!-- OVERLAY: RULES QUICK -->
+  <div class="overlay" id="overlayRules">
+    <div class="modal">
+      <div class="modalHead">
+        <b>Правила</b>
+        <button class="ghost" id="btnCloseRules">Закрыть</button>
+      </div>
+      <div class="modalBody" id="rulesModalBody"></div>
+      <div class="modalFoot">
+        <button class="primary" id="btnFullRules">Открыть экран правил</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
   <script>
-    // ====== State ======
-    let N = 3;              // board size (11)
-    let K = 3;              // win length (we set K=N for simplicity)
-    let board = [];
-    let current = "X";
-    let locked = false;
+    // =========================
+    // Storage keys (20)
+    // =========================
+    const LS_KEY = "ttt_v3_prefs";
+    const LS_STATS = "ttt_v3_stats";
+    const LS_GAME  = "ttt_v3_saved_game";
+    const LS_LB    = "ttt_v3_leaderboard";
 
-    // history for undo (8)
-    /** @type {{idx:number, player:"X"|"O"}[]} */
-    let history = [];
-
-    // settings
-    let mode = "pvp";       // pvp | bot (1)
-    let aiLevel = "easy";   // easy | medium | hard (29)
-    let soundOn = true;     // (7)
-
-    // Stats + persistence (3,16,23)
-    const LS_KEY = "ttt_v2_state";
-    const defaultPersist = {
-      score: { X:0, O:0, D:0, G:0 }, // wins X, wins O, draws, games total (16)
-      analytics: {
-        movesTotal: 0,
-        movesPerGameSum: 0,
-        heat3: Array(9).fill(0), // popularity for 3x3 only (23)
-      },
-      prefs: {
-        theme: "blue",
-        retro: false,
-        soundOn: true,
-        mode: "pvp",
-        aiLevel: "easy",
-        size: 3,
-        first: "X"
-      }
+    // =========================
+    // Helpers
+    // =========================
+    const $ = (id)=>document.getElementById(id);
+    const showToast = (msg, ms=1800)=>{
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(showToast._tm);
+      showToast._tm = setTimeout(()=>t.classList.remove("show"), ms);
     };
-    let persist = loadPersist();
 
-    // ====== Elements ======
-    const gridEl = document.getElementById("grid");
-    const turnTextEl = document.getElementById("turnText");
-    const statusTextEl = document.getElementById("statusText");
-    const hintTextEl = document.getElementById("hintText");
-    const goalTextEl = document.getElementById("goalText");
-
-    const firstSelectEl = document.getElementById("firstSelect");
-    const sizeSelectEl = document.getElementById("sizeSelect");
-    const modeSelectEl = document.getElementById("modeSelect");
-    const aiSelectEl = document.getElementById("aiSelect");
-    const aiPillEl = document.getElementById("aiPill");
-    const themeSelectEl = document.getElementById("themeSelect");
-    const retroBtnEl = document.getElementById("retroBtn");
-    const soundBtnEl = document.getElementById("soundBtn");
-
-    const newGameBtn = document.getElementById("newGameBtn");
-    const undoBtn = document.getElementById("undoBtn");
-    const resetAllBtn = document.getElementById("resetAllBtn");
-    const resetAnalyticsBtn = document.getElementById("resetAnalyticsBtn");
-
-    const winsXEl = document.getElementById("winsX");
-    const winsOEl = document.getElementById("winsO");
-    const drawsEl = document.getElementById("draws");
-    const gamesTotalEl = document.getElementById("gamesTotal");
-
-    const movesTotalEl = document.getElementById("movesTotal");
-    const avgMovesEl = document.getElementById("avgMoves");
-    const topCellEl = document.getElementById("topCell");
-    const wrXEl = document.getElementById("wrX");
-    const wrOEl = document.getElementById("wrO");
-    const wrDEl = document.getElementById("wrD");
-
-    // ====== Utils ======
-    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
-
-    function loadPersist(){
-      try{
-        const raw = localStorage.getItem(LS_KEY);
-        if(!raw) return structuredClone(defaultPersist);
-        const parsed = JSON.parse(raw);
-
-        // defensive merge
-        const out = structuredClone(defaultPersist);
-        if(parsed.score) Object.assign(out.score, parsed.score);
-        if(parsed.analytics){
-          out.analytics.movesTotal = parsed.analytics.movesTotal ?? out.analytics.movesTotal;
-          out.analytics.movesPerGameSum = parsed.analytics.movesPerGameSum ?? out.analytics.movesPerGameSum;
-          if(Array.isArray(parsed.analytics.heat3) && parsed.analytics.heat3.length === 9) out.analytics.heat3 = parsed.analytics.heat3;
-        }
-        if(parsed.prefs) Object.assign(out.prefs, parsed.prefs);
-        return out;
-      }catch{
-        return structuredClone(defaultPersist);
-      }
-    }
-    function savePersist(){
-      localStorage.setItem(LS_KEY, JSON.stringify(persist));
-    }
-
-    function setTheme(name){
-      document.documentElement.dataset.theme = name;
-      persist.prefs.theme = name;
-      savePersist();
-    }
-    function setRetro(on){
-      document.documentElement.classList.toggle("retro", on);
-      persist.prefs.retro = on;
-      savePersist();
-      retroBtnEl.textContent = on ? "Retro: On" : "Retro";
-    }
-
-    function setSound(on){
-      soundOn = on;
-      persist.prefs.soundOn = on;
-      savePersist();
-      soundBtnEl.textContent = on ? "Sound: On" : "Sound: Off";
-    }
-
-    // ====== Sound (7) – simple WebAudio beeps ======
+    // Sound (15) via WebAudio beeps
     let audioCtx = null;
     function beep(freq=440, duration=0.06, type="sine", gain=0.06){
-      if(!soundOn) return;
+      if(state.prefs.sound !== "on") return;
       try{
         if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const o = audioCtx.createOscillator();
@@ -493,317 +770,743 @@
         o.stop(audioCtx.currentTime + duration);
       }catch{}
     }
-    function sfxMove(player){
-      if(player === "X") beep(520, 0.05, "square", 0.05);
-      else beep(330, 0.05, "triangle", 0.05);
+    const sfxMove = (sym)=>{
+      if(sym==="X") beep(520,0.05,"square",0.05);
+      else if(sym==="O") beep(330,0.05,"triangle",0.05);
+      else beep(410,0.05,"sine",0.05);
+    };
+    const sfxWin = ()=>{
+      beep(660,0.07,"square",0.05);
+      setTimeout(()=>beep(880,0.07,"square",0.05),80);
+      setTimeout(()=>beep(990,0.09,"square",0.05),160);
+    };
+    const sfxDraw = ()=>{
+      beep(220,0.08,"sine",0.05);
+      setTimeout(()=>beep(180,0.1,"sine",0.05),100);
+    };
+
+    function safeJSONParse(v, fallback){
+      try{ return JSON.parse(v) ?? fallback; }catch{ return fallback; }
     }
-    function sfxWin(){
-      beep(660, 0.07, "square", 0.05);
-      setTimeout(()=>beep(880, 0.07, "square", 0.05), 80);
-      setTimeout(()=>beep(990, 0.09, "square", 0.05), 160);
-    }
-    function sfxDraw(){
-      beep(220, 0.08, "sine", 0.05);
-      setTimeout(()=>beep(180, 0.1, "sine", 0.05), 100);
-    }
-
-    // ====== Board + Win check (works for N=3..5) ======
-    function idx(r,c){ return r*N + c; }
-    function inBounds(r,c){ return r>=0 && c>=0 && r<N && c<N; }
-
-    // generate all K-in-row lines for N x N (K=N here)
-    function computeWinLines(){
-      const lines = [];
-
-      // rows
-      for(let r=0; r<N; r++){
-        const line = [];
-        for(let c=0; c<N; c++) line.push(idx(r,c));
-        lines.push(line);
-      }
-      // cols
-      for(let c=0; c<N; c++){
-        const line = [];
-        for(let r=0; r<N; r++) line.push(idx(r,c));
-        lines.push(line);
-      }
-      // diagonals
-      const d1 = [], d2 = [];
-      for(let i=0;i<N;i++){
-        d1.push(idx(i,i));
-        d2.push(idx(i,N-1-i));
-      }
-      lines.push(d1, d2);
-
-      return lines;
-    }
-
-    let WIN_LINES = [];
-
-    function getWinner(){
-      for(const line of WIN_LINES){
-        const a = board[line[0]];
-        if(!a) continue;
-        let ok = true;
-        for(let i=1;i<line.length;i++){
-          if(board[line[i]] !== a){ ok=false; break; }
-        }
-        if(ok) return { winner: a, line };
-      }
-      if(board.every(Boolean)) return { winner: "D", line: [] };
-      return null;
-    }
-
-    // ====== UI build/render ======
-    function buildGrid(){
-      gridEl.innerHTML = "";
-      gridEl.style.gridTemplateColumns = `repeat(${N}, 1fr)`;
-
-      for(let i=0;i<N*N;i++){
-        const btn = document.createElement("button");
-        btn.className = "cell";
-        btn.type = "button";
-        btn.dataset.index = String(i);
-        btn.addEventListener("click", () => playMove(i));
-        gridEl.appendChild(btn);
-      }
-    }
-
-    function render(){
-      const cells = gridEl.querySelectorAll(".cell");
-      cells.forEach((cell, i) => {
-        const v = board[i];
-        cell.textContent = v ? v : "";
-        cell.classList.toggle("disabled", locked || !!v || (mode==="bot" && current==="O"));
-        cell.classList.remove("win","pop");
-        cell.classList.toggle("mark-x", v === "X");
-        cell.classList.toggle("mark-o", v === "O");
-      });
-
-      turnTextEl.textContent = current;
-      goalTextEl.textContent = String(K);
-
-      const win = getWinner();
-      if(win){
-        locked = true;
-        if(win.winner === "D"){
-          statusTextEl.innerHTML = `Результат: <b>Ничья</b>`;
-          hintTextEl.innerHTML = `Нажми «Новая игра»`;
-        } else {
-          statusTextEl.innerHTML = `Победил: <b>${win.winner}</b>`;
-          hintTextEl.innerHTML = `Линия подсвечена. Нажми «Новая игра»`;
-          // (6) highlight line
-          win.line.forEach(id => cells[id].classList.add("win"));
-        }
-      } else {
-        locked = false;
-        statusTextEl.innerHTML = `Ходит: <b>${current}</b>` + (mode==="bot" ? ` <span class="small">(бот: ${labelAI(aiLevel)})</span>` : "");
-        hintTextEl.innerHTML = `Цель: <b>${K}</b> в ряд`;
-      }
-
-      // stats (3,16)
-      winsXEl.textContent = String(persist.score.X);
-      winsOEl.textContent = String(persist.score.O);
-      drawsEl.textContent = String(persist.score.D);
-      gamesTotalEl.textContent = String(persist.score.G);
-
-      // analytics (23)
-      const a = persist.analytics;
-      movesTotalEl.textContent = String(a.movesTotal);
-      const avg = persist.score.G > 0 ? (a.movesPerGameSum / persist.score.G) : 0;
-      avgMovesEl.textContent = avg ? avg.toFixed(1) : "0";
-      topCellEl.textContent = getTopCellLabel();
-      wrXEl.textContent = pct(persist.score.X, persist.score.G);
-      wrOEl.textContent = pct(persist.score.O, persist.score.G);
-      wrDEl.textContent = pct(persist.score.D, persist.score.G);
-
-      // undo availability
-      undoBtn.disabled = history.length === 0 || locked;
-    }
-
-    function pct(part, total){
+    function pct(part,total){
       if(!total) return "0%";
       return Math.round((part/total)*100) + "%";
     }
 
-    function getTopCellLabel(){
-      // only meaningful for 3x3 (23)
-      const h = persist.analytics.heat3;
-      if(!h || h.length !== 9) return "—";
+    // Goal rule (16): dynamic K by size
+    function calcGoal(n){
+      if(n<=3) return 3;
+      if(n===4) return 3;
+      if(n<=6) return 4;      // 5-6
+      if(n<=8) return 5;      // 7-8
+      return 5;               // 9-10
+    }
+
+    // =========================
+    // State
+    // =========================
+    const defaultPrefs = {
+      mode:"pvp", size:3, ai:"easy", theme:"orange", sound:"on",
+      p1:"Player 1", p2:"Player 2", p3:"Player 3",
+      first:0
+    };
+    const defaultStats = {
+      score:{X:0,O:0,T:0,D:0,G:0},
+      analytics:{
+        movesTotal:0,
+        movesPerGameSum:0,
+        heat3: Array(9).fill(0)
+      }
+    };
+
+    const state = {
+      view:"home",
+      prefs: {...defaultPrefs, ...safeJSONParse(localStorage.getItem(LS_KEY), {})},
+      stats: {...defaultStats, ...safeJSONParse(localStorage.getItem(LS_STATS), {})},
+
+      // game runtime
+      N:3, K:3,
+      players:[], // {name,sym}
+      turn:0,
+      board:[],
+      history:[], // {idx, sym, turnBefore}
+      locked:false,
+      winLine:[],
+      winner:null // sym or "D"
+    };
+
+    function savePrefs(){ localStorage.setItem(LS_KEY, JSON.stringify(state.prefs)); }
+    function saveStats(){ localStorage.setItem(LS_STATS, JSON.stringify(state.stats)); }
+
+    function saveGame(){ // (20)
+      const payload = {
+        prefs: state.prefs,
+        N: state.N, K: state.K,
+        players: state.players,
+        turn: state.turn,
+        board: state.board,
+        history: state.history
+      };
+      localStorage.setItem(LS_GAME, JSON.stringify(payload));
+      updateContinueBtn();
+    }
+    function clearSavedGame(){
+      localStorage.removeItem(LS_GAME);
+      updateContinueBtn();
+    }
+
+    // Leaderboard (18)
+    function getLB(){ return safeJSONParse(localStorage.getItem(LS_LB), []); }
+    function saveLB(list){ localStorage.setItem(LS_LB, JSON.stringify(list.slice(0,15))); }
+    function addLB(entry){
+      const list = getLB();
+      list.unshift(entry);
+      saveLB(list);
+    }
+
+    // =========================
+    // View navigation (1,10,11)
+    // =========================
+    const views = {
+      home:$("viewHome"),
+      settings:$("viewSettings"),
+      game:$("viewGame"),
+      rules:$("viewRules"),
+      lb:$("viewLB"),
+    };
+    function setView(name){
+      state.view = name;
+      for(const k in views) views[k].classList.toggle("active", k===name);
+      $("subLine").textContent =
+        name==="home" ? "Меню → Настройки → Играть" :
+        name==="settings" ? "Настройки: режим, поле, имена, тема" :
+        name==="game" ? "Игра: минимум текста, максимум действий" :
+        name==="rules" ? "Правила: всё подробно и понятно" :
+        "Результаты: локальная таблица";
+      if(name==="lb") renderLB();
+    }
+
+    // =========================
+    // Build Settings UI (4,12,17,19)
+    // =========================
+    function fillSizeSelect(){
+      const s = $("size");
+      s.innerHTML = "";
+      for(let n=3;n<=10;n++){
+        const o = document.createElement("option");
+        o.value = String(n);
+        o.textContent = `${n}×${n}`;
+        s.appendChild(o);
+      }
+    }
+
+    function applyPrefsToUI(){
+      $("mode").value = state.prefs.mode;
+      $("size").value = String(state.prefs.size);
+      $("ai").value = state.prefs.ai;
+      $("theme").value = state.prefs.theme;
+      $("sound").value = state.prefs.sound;
+
+      $("p1").value = state.prefs.p1 || "";
+      $("p2").value = state.prefs.p2 || "";
+      $("p3").value = state.prefs.p3 || "";
+
+      // show/hide 3rd player (17)
+      const is3 = state.prefs.mode==="3p";
+      $("p3Row").style.display = is3 ? "" : "none";
+      $("firstRow").style.display = is3 ? "none" : "";
+      $("aiField").style.display = (state.prefs.mode==="bot") ? "" : "none";
+      $("p2Label").textContent = (state.prefs.mode==="bot") ? "Игрок 2 (ИИ — O)" : "Игрок 2 (O)";
+
+      // first chooser
+      if(is3) $("first").value = String(state.prefs.first ?? 0);
+      else $("first2").value = String(state.prefs.first ?? 0);
+
+      // theme apply (6,19)
+      document.documentElement.dataset.theme = state.prefs.theme || "orange";
+
+      // goal preview (16)
+      const n = Number(state.prefs.size||3);
+      const k = calcGoal(n);
+      $("goalNow").textContent = String(k);
+      $("rulesGoalMini").textContent = String(k);
+
+      renderSummary();
+    }
+
+    function readUIToPrefs(){
+      const mode = $("mode").value;
+      const size = Number($("size").value);
+      const ai = $("ai").value;
+      const theme = $("theme").value;
+      const sound = $("sound").value;
+
+      const p1 = ($("p1").value || "").trim() || "Player 1";
+      const p2 = ($("p2").value || "").trim() || (mode==="bot" ? "AI" : "Player 2");
+      const p3 = ($("p3").value || "").trim() || "Player 3";
+
+      let first = 0;
+      if(mode==="3p") first = Number($("first").value);
+      else first = Number($("first2").value);
+
+      state.prefs = {mode,size,ai,theme,sound,p1,p2,p3,first};
+      savePrefs();
+      applyPrefsToUI();
+    }
+
+    function renderSummary(){
+      const p = state.prefs;
+      const n = Number(p.size||3);
+      const k = calcGoal(n);
+
+      $("sumMode").textContent =
+        p.mode==="pvp" ? "Игрок vs Игрок" :
+        p.mode==="bot" ? "Игрок vs ИИ" :
+        "3 игрока";
+      $("sumSize").textContent = `${n}×${n}`;
+      $("sumGoal").textContent = String(k);
+      $("sumTheme").textContent = (p.theme||"orange");
+      $("sumAI").textContent = p.mode==="bot" ? (p.ai||"easy") : "—";
+      $("sumPlayers").textContent =
+        p.mode==="3p" ? `${p.p1}, ${p.p2}, ${p.p3}` :
+        `${p.p1}, ${p.p2}`;
+    }
+
+    // =========================
+    // Game build / win detection for N up to 10 (4,16,21,27)
+    // =========================
+    const SYMBOLS_2P = ["X","O"];
+    const SYMBOLS_3P = ["X","O","△"];
+
+    function startGame(fromSaved=false){
+      readUIToPrefs();
+
+      state.N = state.prefs.size;
+      state.K = calcGoal(state.N);
+
+      // players (3,17)
+      if(state.prefs.mode==="3p"){
+        state.players = [
+          {name: state.prefs.p1, sym:"X"},
+          {name: state.prefs.p2, sym:"O"},
+          {name: state.prefs.p3, sym:"△"},
+        ];
+      } else {
+        state.players = [
+          {name: state.prefs.p1, sym:"X"},
+          {name: state.prefs.mode==="bot" ? (state.prefs.p2 || "AI") : state.prefs.p2, sym:"O"},
+        ];
+      }
+
+      // init board
+      state.board = Array(state.N*state.N).fill(null);
+      state.history = [];
+      state.locked = false;
+      state.winLine = [];
+      state.winner = null;
+
+      state.turn = clampFirst();
+      buildBoard();
+      updateGameHUD();
+      setView("game");
+
+      // (26) newbie feedback
+      showToast("Игра началась. Undo = U, Restart = R", 2200);
+
+      // If bot starts
+      if(state.prefs.mode==="bot" && currentSym()==="O"){
+        state.locked = true;
+        setTimeout(()=>botTurn(), 220);
+      }
+
+      saveGame();
+      clearSavedGame._used = false;
+    }
+
+    function clampFirst(){
+      const max = (state.prefs.mode==="3p") ? 2 : 1;
+      let f = Number(state.prefs.first||0);
+      if(isNaN(f)) f=0;
+      return Math.max(0, Math.min(max, f));
+    }
+
+    function buildBoard(){
+      const b = $("board");
+      b.innerHTML = "";
+      b.style.gridTemplateColumns = `repeat(${state.N}, 1fr)`;
+
+      for(let i=0;i<state.N*state.N;i++){
+        const cell = document.createElement("button");
+        cell.className = "cell";
+        cell.type = "button";
+        cell.dataset.index = String(i);
+        cell.addEventListener("click", ()=>playMove(i));
+        b.appendChild(cell);
+      }
+      renderBoard();
+    }
+
+    function renderBoard(){
+      const cells = $("board").querySelectorAll(".cell");
+      cells.forEach((c,i)=>{
+        const v = state.board[i];
+        c.textContent = v ? v : "";
+        c.classList.toggle("disabled", state.locked || !!state.winner || !!v || (state.prefs.mode==="bot" && currentSym()==="O"));
+        c.classList.remove("win","pop");
+      });
+      // highlight win line (27)
+      if(state.winLine && state.winLine.length){
+        state.winLine.forEach(idx=>{
+          const el = $("board").querySelector(`.cell[data-index="${idx}"]`);
+          if(el) el.classList.add("win");
+        });
+      }
+      updateProgress();
+      updateGameHUD();
+    }
+
+    function updateProgress(){ // (30)
+      const total = state.N*state.N;
+      const filled = state.board.filter(Boolean).length;
+      const pctv = total ? Math.round((filled/total)*100) : 0;
+      $("progText").textContent = `${pctv}%`;
+      $("progFill").style.width = `${pctv}%`;
+    }
+
+    function updateGameHUD(){
+      const p = state.players[state.turn];
+      const sym = p.sym;
+      $("whoLine").innerHTML = `Ходит: <b>${escapeHtml(p.name)}</b> <span class="sym">${sym}</span>`;
+
+      $("gMode").textContent =
+        state.prefs.mode==="pvp" ? "PvP" :
+        state.prefs.mode==="bot" ? "vs AI" : "3P";
+      $("gSize").textContent = `${state.N}×${state.N}`;
+      $("gGoal").textContent = `${state.K} в ряд`;
+      $("gAI").textContent = (state.prefs.mode==="bot") ? state.prefs.ai : "—";
+
+      // compact score (22)
+      $("wX").textContent = state.stats.score.X||0;
+      $("wO").textContent = state.stats.score.O||0;
+      $("wT").textContent = state.stats.score.T||0;
+      $("wD").textContent = state.stats.score.D||0;
+      $("wG").textContent = state.stats.score.G||0;
+
+      // analytics (14,23)
+      const a = state.stats.analytics;
+      $("aMoves").textContent = String(a.movesTotal||0);
+      const avg = (state.stats.score.G>0) ? (a.movesPerGameSum/state.stats.score.G) : 0;
+      $("aAvg").textContent = avg ? avg.toFixed(1) : "0";
+      $("aWrX").textContent = pct(state.stats.score.X, state.stats.score.G);
+      $("aWrO").textContent = pct(state.stats.score.O, state.stats.score.G);
+      $("aWrT").textContent = pct(state.stats.score.T, state.stats.score.G);
+      $("aWrD").textContent = pct(state.stats.score.D, state.stats.score.G);
+      $("aTop").textContent = topCellLabel();
+    }
+
+    function topCellLabel(){ // (23) for 3x3 heatmap
+      const h = state.stats.analytics.heat3 || [];
+      if(state.N!==3 || h.length!==9) return "—";
       const sum = h.reduce((a,b)=>a+b,0);
-      if(sum === 0) return "—";
-      let best = 0;
-      for(let i=1;i<9;i++) if(h[i] > h[best]) best = i;
-      // label like "5 (центр)"
+      if(!sum) return "—";
+      let best=0;
+      for(let i=1;i<9;i++) if(h[i]>h[best]) best=i;
       const names = ["1","2","3","4","5 (центр)","6","7","8","9"];
       return names[best] || String(best+1);
     }
 
-    // ====== Game logic ======
-    function labelAI(lvl){
-      if(lvl==="easy") return "лёгкий";
-      if(lvl==="medium") return "средний";
-      return "сложный";
-    }
-
-    function applyMove(i, player){
-      board[i] = player;
-      history.push({idx:i, player});
-      // (5) pop animation
-      const cell = gridEl.querySelector(`.cell[data-index="${i}"]`);
-      if(cell){
-        cell.classList.add("pop");
-        setTimeout(()=>cell.classList.remove("pop"), 170);
-      }
-
-      // (7) sound
-      sfxMove(player);
-
-      // (23) heat for 3x3
-      if(N===3){
-        persist.analytics.heat3[i] = (persist.analytics.heat3[i] || 0) + 1;
-      }
-      persist.analytics.movesTotal++;
-      savePersist();
-    }
-
-    function finishGame(winner){
-      persist.score.G++;
-      if(winner === "X") persist.score.X++;
-      else if(winner === "O") persist.score.O++;
-      else persist.score.D++;
-
-      // (23) moves per game
-      persist.analytics.movesPerGameSum += history.length;
-
-      savePersist();
-
-      if(winner === "D") sfxDraw();
-      else sfxWin();
-    }
+    function currentSym(){ return state.players[state.turn].sym; }
 
     function playMove(i){
-      if(locked) return;
-      if(board[i]) return;
+      if(state.locked || state.winner) return;
+      if(state.board[i]) return;
+      if(state.prefs.mode==="bot" && currentSym()==="O") return;
 
-      // if bot turn, block manual clicks
-      if(mode === "bot" && current === "O") return;
+      applyMove(i, currentSym());
 
-      applyMove(i, current);
-
-      const win = getWinner();
-      if(win){
-        finishGame(win.winner);
-        render();
+      const w = checkWinner();
+      if(w){
+        finishGame(w);
+        renderBoard();
         return;
       }
 
-      current = current === "X" ? "O" : "X";
-      render();
+      nextTurn();
+      renderBoard();
 
-      // bot move (1,29)
-      if(mode === "bot" && current === "O"){
-        locked = true; // lock briefly to avoid double input
-        setTimeout(() => {
-          botTurn();
-        }, 180);
+      // Bot move
+      if(state.prefs.mode==="bot" && currentSym()==="O"){
+        state.locked = true;
+        setTimeout(()=>botTurn(), 180);
       }
     }
 
-    // ====== Undo (8) ======
+    function applyMove(i, sym){
+      state.board[i] = sym;
+      state.history.push({idx:i, sym, turnBefore: state.turn});
+
+      // animation (21)
+      const el = $("board").querySelector(`.cell[data-index="${i}"]`);
+      if(el){
+        el.classList.add("pop");
+        setTimeout(()=>el.classList.remove("pop"), 170);
+      }
+
+      // sound (15)
+      sfxMove(sym);
+
+      // analytics (14,23)
+      state.stats.analytics.movesTotal = (state.stats.analytics.movesTotal||0) + 1;
+      if(state.N===3){
+        const h = state.stats.analytics.heat3 || Array(9).fill(0);
+        h[i] = (h[i]||0) + 1;
+        state.stats.analytics.heat3 = h;
+      }
+      saveStats();
+
+      // autosave (20)
+      saveGame();
+    }
+
+    function nextTurn(){
+      if(state.prefs.mode==="3p") state.turn = (state.turn + 1) % 3;
+      else state.turn = (state.turn + 1) % 2;
+    }
+
+    // Winner check for K-in-row sliding windows (27)
+    function checkWinner(){
+      const N = state.N, K = state.K, B = state.board;
+
+      const lines = [];
+
+      // rows
+      for(let r=0;r<N;r++){
+        for(let c=0;c<=N-K;c++){
+          const seq = [];
+          for(let t=0;t<K;t++) seq.push(r*N + (c+t));
+          lines.push(seq);
+        }
+      }
+      // cols
+      for(let c=0;c<N;c++){
+        for(let r=0;r<=N-K;r++){
+          const seq = [];
+          for(let t=0;t<K;t++) seq.push((r+t)*N + c);
+          lines.push(seq);
+        }
+      }
+      // diag down-right
+      for(let r=0;r<=N-K;r++){
+        for(let c=0;c<=N-K;c++){
+          const seq = [];
+          for(let t=0;t<K;t++) seq.push((r+t)*N + (c+t));
+          lines.push(seq);
+        }
+      }
+      // diag up-right
+      for(let r=K-1;r<N;r++){
+        for(let c=0;c<=N-K;c++){
+          const seq = [];
+          for(let t=0;t<K;t++) seq.push((r-t)*N + (c+t));
+          lines.push(seq);
+        }
+      }
+
+      for(const seq of lines){
+        const a = B[seq[0]];
+        if(!a) continue;
+        let ok = true;
+        for(let i=1;i<seq.length;i++){
+          if(B[seq[i]]!==a){ ok=false; break; }
+        }
+        if(ok){
+          state.winLine = seq;
+          state.winner = a;
+          return {winner:a, line:seq};
+        }
+      }
+
+      // draw
+      if(B.every(Boolean)){
+        state.winLine = [];
+        state.winner = "D";
+        return {winner:"D", line:[]};
+      }
+      return null;
+    }
+
+    function finishGame(res){
+      state.stats.score.G = (state.stats.score.G||0) + 1;
+      if(res.winner==="X") state.stats.score.X = (state.stats.score.X||0) + 1;
+      else if(res.winner==="O") state.stats.score.O = (state.stats.score.O||0) + 1;
+      else if(res.winner==="△") state.stats.score.T = (state.stats.score.T||0) + 1;
+      else state.stats.score.D = (state.stats.score.D||0) + 1;
+
+      state.stats.analytics.movesPerGameSum = (state.stats.analytics.movesPerGameSum||0) + state.history.length;
+      saveStats();
+
+      // leaderboard (18)
+      const winnerName =
+        res.winner==="D" ? "Ничья" :
+        state.players.find(p=>p.sym===res.winner)?.name || res.winner;
+
+      addLB({
+        ts: Date.now(),
+        mode: state.prefs.mode,
+        size: `${state.N}x${state.N}`,
+        goal: state.K,
+        winner: winnerName,
+        players: state.players.map(p=>p.name).join(", ")
+      });
+
+      // sound
+      if(res.winner==="D") sfxDraw(); else sfxWin();
+
+      // tiny end label (27)
+      showToast(res.winner==="D" ? "Ничья" : `Победил: ${winnerName}`, 2200);
+
+      // keep saved game? better clear so "Continue" doesn’t reopen finished match
+      clearSavedGame();
+      saveGame(); // store latest prefs anyway
+    }
+
+    // Undo (8)
     function undo(){
-      if(locked) return;
-      if(history.length === 0) return;
+      if(state.winner) return;
 
-      // if bot mode, undo 2 moves (bot + player) if possible
-      const pops = (mode==="bot") ? 2 : 1;
+      if(!state.history.length) return;
+
+      // vs AI: undo 2 moves if possible (8)
+      const pops = (state.prefs.mode==="bot") ? 2 : 1;
+
       for(let t=0;t<pops;t++){
-        const last = history.pop();
+        const last = state.history.pop();
         if(!last) break;
-        board[last.idx] = null;
-        current = last.player; // restore turn to the undone player
+        state.board[last.idx] = null;
+        state.turn = last.turnBefore;
       }
-      render();
+      state.winLine = [];
+      state.winner = null;
+      state.locked = false;
+
+      showToast("Undo", 800);
+      renderBoard();
+      saveGame();
     }
 
-    // ====== Bot AI (1,9,29) ======
+    function restart(){
+      showToast("Restart", 800);
+      startGame(false);
+    }
+
+    // =========================
+    // Bot AI (5,25) – scalable for up to 10x10
+    // =========================
     function botTurn(){
-      if(getWinner()){ locked = false; render(); return; }
-
+      if(state.winner){ state.locked=false; return; }
       const move = chooseBotMove();
-      locked = false;
-
-      if(move == null){
-        render();
-        return;
-      }
+      state.locked = false;
+      if(move==null){ renderBoard(); return; }
 
       applyMove(move, "O");
 
-      const win = getWinner();
-      if(win){
-        finishGame(win.winner);
-        render();
+      const w = checkWinner();
+      if(w){
+        finishGame(w);
+        renderBoard();
         return;
       }
-
-      current = "X";
-      render();
+      nextTurn();
+      renderBoard();
     }
 
     function emptyCells(){
-      const out = [];
-      for(let i=0;i<board.length;i++) if(!board[i]) out.push(i);
+      const out=[];
+      for(let i=0;i<state.board.length;i++) if(!state.board[i]) out.push(i);
       return out;
     }
 
     function chooseBotMove(){
       const empties = emptyCells();
-      if(empties.length === 0) return null;
+      if(!empties.length) return null;
 
-      if(aiLevel === "easy"){
+      const lvl = state.prefs.ai;
+
+      // easy: random
+      if(lvl==="easy"){
         return empties[Math.floor(Math.random()*empties.length)];
       }
 
-      if(aiLevel === "medium"){
-        // win now
-        const winMove = findImmediateWin("O");
-        if(winMove != null) return winMove;
-        // block
-        const blockMove = findImmediateWin("X");
-        if(blockMove != null) return blockMove;
-        // center preference for 3x3
-        if(N===3 && !board[4]) return 4;
-        // else random
+      // medium: win/block + center pref + random
+      if(lvl==="medium"){
+        const w = immediateWin("O"); if(w!=null) return w;
+        const b = immediateWin("X"); if(b!=null) return b;
+        const c = centerCandidate(); if(c!=null) return c;
         return empties[Math.floor(Math.random()*empties.length)];
       }
 
-      // hard (9): minimax full for 3x3; depth-limited for 4/5
-      const depth = (N===3) ? 9 : (N===4 ? 5 : 4);
-      const best = minimaxRoot(depth);
+      // hard/expert:
+      // - for N<=5 use minimax depth-limited
+      // - for N>5 use heuristic: win/block, 2-step lookahead, center/line scoring
+      if(state.N<=5){
+        const depth = (lvl==="expert") ? 7 : 5;
+        return minimaxRoot(depth) ?? empties[Math.floor(Math.random()*empties.length)];
+      }
+
+      // big boards:
+      const w = immediateWin("O"); if(w!=null) return w;
+      const b = immediateWin("X"); if(b!=null) return b;
+
+      // expert: try “good” move by scoring
+      const candidates = pickCandidates(empties, lvl==="expert" ? 18 : 10);
+      let best = candidates[0], bestScore = -Infinity;
+      for(const m of candidates){
+        const sc = scoreMove(m, "O");
+        if(sc>bestScore){ bestScore=sc; best=m; }
+      }
       return best ?? empties[Math.floor(Math.random()*empties.length)];
     }
 
-    function findImmediateWin(player){
-      const empties = emptyCells();
-      for(const i of empties){
-        board[i] = player;
-        const w = getWinner();
-        board[i] = null;
-        if(w && w.winner === player) return i;
+    function centerCandidate(){
+      const N = state.N;
+      const centers = [];
+      if(N%2===1){
+        centers.push((Math.floor(N/2))*N + Math.floor(N/2));
+      } else {
+        const a = N/2 - 1, b = N/2;
+        centers.push(a*N+a, a*N+b, b*N+a, b*N+b);
+      }
+      for(const c of centers){
+        if(!state.board[c]) return c;
       }
       return null;
     }
 
+    function immediateWin(sym){
+      const empties = emptyCells();
+      for(const i of empties){
+        state.board[i]=sym;
+        const w = checkWinner();
+        state.board[i]=null;
+        state.winLine=[]; state.winner=null;
+        if(w && w.winner===sym) return i;
+      }
+      return null;
+    }
+
+    function pickCandidates(empties, limit){
+      // pick around existing marks to reduce branching
+      const N=state.N;
+      const hasNear = (idx)=>{
+        const r=Math.floor(idx/N), c=idx%N;
+        for(let dr=-1;dr<=1;dr++){
+          for(let dc=-1;dc<=1;dc++){
+            if(dr===0 && dc===0) continue;
+            const rr=r+dr, cc=c+dc;
+            if(rr>=0 && cc>=0 && rr<N && cc<N){
+              const j=rr*N+cc;
+              if(state.board[j]) return true;
+            }
+          }
+        }
+        return false;
+      };
+      const near = empties.filter(hasNear);
+      const pool = near.length ? near : empties;
+      // shuffle-ish
+      const out = pool.slice();
+      for(let i=out.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [out[i],out[j]]=[out[j],out[i]];
+      }
+      return out.slice(0, Math.min(limit, out.length));
+    }
+
+    function scoreMove(i, sym){
+      // line-based heuristic: reward extending own lines, block opponent lines
+      const N=state.N, K=state.K;
+      const opp = (sym==="O") ? "X" : "O";
+
+      state.board[i]=sym;
+      let sc = linePotential(sym)*1.0 + blockPotential(opp)*0.8;
+      state.board[i]=null;
+      return sc;
+    }
+
+    function linePotential(sym){
+      // count sequences with max same symbols and no opponents
+      const N=state.N, K=state.K, B=state.board;
+      let score=0;
+
+      const scanSeq = (seq)=>{
+        let s=0,o=0;
+        for(const id of seq){
+          if(B[id]===sym) s++;
+          else if(B[id] && B[id]!==sym) o++;
+        }
+        if(o>0) return 0;
+        // quadratic reward
+        return s*s;
+      };
+
+      // generate sequences length K (same as winner)
+      for(let r=0;r<N;r++) for(let c=0;c<=N-K;c++){
+        const seq=[]; for(let t=0;t<K;t++) seq.push(r*N+c+t); score+=scanSeq(seq);
+      }
+      for(let c=0;c<N;c++) for(let r=0;r<=N-K;r++){
+        const seq=[]; for(let t=0;t<K;t++) seq.push((r+t)*N+c); score+=scanSeq(seq);
+      }
+      for(let r=0;r<=N-K;r++) for(let c=0;c<=N-K;c++){
+        const seq=[]; for(let t=0;t<K;t++) seq.push((r+t)*N+(c+t)); score+=scanSeq(seq);
+      }
+      for(let r=K-1;r<N;r++) for(let c=0;c<=N-K;c++){
+        const seq=[]; for(let t=0;t<K;t++) seq.push((r-t)*N+(c+t)); score+=scanSeq(seq);
+      }
+      return score;
+    }
+
+    function blockPotential(opp){
+      // reward positions that reduce opponent potential
+      // simple: count opponent-only sequences and penalize them (so blocking increases score)
+      const N=state.N, K=state.K, B=state.board;
+      let score=0;
+
+      const scanSeq = (seq)=>{
+        let s=0,o=0;
+        for(const id of seq){
+          if(B[id]===opp) o++;
+          else if(B[id] && B[id]!==opp) s++;
+        }
+        if(s>0) return 0;
+        return o*o;
+      };
+
+      for(let r=0;r<N;r++) for(let c=0;c<=N-K;c++){
+        const seq=[]; for(let t=0;t<K;t++) seq.push(r*N+c+t); score+=scanSeq(seq);
+      }
+      for(let c=0;c<N;c++) for(let r=0;r<=N-K;r++){
+        const seq=[]; for(let t=0;t<K;t++) seq.push((r+t)*N+c); score+=scanSeq(seq);
+      }
+      for(let r=0;r<=N-K;r++) for(let c=0;c<=N-K;c++){
+        const seq=[]; for(let t=0;t<K;t++) seq.push((r+t)*N+(c+t)); score+=scanSeq(seq);
+      }
+      for(let r=K-1;r<N;r++) for(let c=0;c<=N-K;c++){
+        const seq=[]; for(let t=0;t<K;t++) seq.push((r-t)*N+(c+t)); score+=scanSeq(seq);
+      }
+      // higher opp potential -> we want to block => subtract
+      return -score;
+    }
+
+    // Minimax for <=5 boards
     function minimaxRoot(depth){
       const empties = emptyCells();
       let bestScore = -Infinity;
       let bestMove = null;
-
       for(const i of empties){
-        board[i] = "O";
+        state.board[i] = "O";
         const score = minimax(depth-1, false, -Infinity, Infinity);
-        board[i] = null;
+        state.board[i] = null;
+        state.winLine=[]; state.winner=null;
         if(score > bestScore){
           bestScore = score;
           bestMove = i;
@@ -811,171 +1514,288 @@
       }
       return bestMove;
     }
-
     function minimax(depth, isMax, alpha, beta){
-      const w = getWinner();
+      const w = checkWinner();
       if(w){
-        if(w.winner === "O") return 1000 + depth; // prefer faster wins
-        if(w.winner === "X") return -1000 - depth;
-        return 0; // draw
+        const res = (w.winner==="O") ? 1000+depth :
+                    (w.winner==="X") ? -1000-depth :
+                    0;
+        state.winLine=[]; state.winner=null;
+        return res;
       }
-      if(depth <= 0){
-        return evaluate();
+      if(depth<=0){
+        const e = evalSmall();
+        state.winLine=[]; state.winner=null;
+        return e;
       }
 
       const empties = emptyCells();
       if(isMax){
         let best = -Infinity;
         for(const i of empties){
-          board[i] = "O";
-          best = Math.max(best, minimax(depth-1, false, alpha, beta));
-          board[i] = null;
-          alpha = Math.max(alpha, best);
-          if(beta <= alpha) break;
+          state.board[i]="O";
+          best = Math.max(best, minimax(depth-1,false,alpha,beta));
+          state.board[i]=null;
+          alpha = Math.max(alpha,best);
+          if(beta<=alpha) break;
         }
         return best;
-      } else {
+      }else{
         let best = Infinity;
         for(const i of empties){
-          board[i] = "X";
-          best = Math.min(best, minimax(depth-1, true, alpha, beta));
-          board[i] = null;
-          beta = Math.min(beta, best);
-          if(beta <= alpha) break;
+          state.board[i]="X";
+          best = Math.min(best, minimax(depth-1,true,alpha,beta));
+          state.board[i]=null;
+          beta = Math.min(beta,best);
+          if(beta<=alpha) break;
         }
         return best;
       }
     }
+    function evalSmall(){
+      // quick heuristic using potential lines
+      const savedN = state.N;
+      const savedK = state.K;
+      // reuse scoring
+      return linePotential("O") - linePotential("X");
+    }
 
-    // simple heuristic for 4x4/5x5: count potential lines
-    function evaluate(){
-      let score = 0;
-      for(const line of WIN_LINES){
-        let x=0,o=0;
-        for(const id of line){
-          if(board[id]==="X") x++;
-          else if(board[id]==="O") o++;
-        }
-        // if both present -> blocked line
-        if(x>0 && o>0) continue;
-        if(o>0) score += (o*o);
-        if(x>0) score -= (x*x);
+    // =========================
+    // Rules (11) + compact overview (12,22)
+    // =========================
+    function buildRulesText(){
+      const n = state.prefs.size;
+      const k = calcGoal(n);
+      const mode = state.prefs.mode;
+
+      const modeText =
+        mode==="pvp" ? "Игрок vs Игрок: X и O ходят по очереди." :
+        mode==="bot" ? "Игрок vs ИИ: ты играешь за X, бот играет за O." :
+        "3 игрока: X → O → △ по кругу.";
+
+      const txt = `
+        <b>Цель</b>: собрать <b>${k}</b> одинаковых символов в ряд по горизонтали, вертикали или диагонали.<br/><br/>
+        <b>Поле</b>: ${n}×${n} (максимум 10×10).<br/>
+        <b>Режим</b>: ${escapeHtml(modeText)}<br/><br/>
+        <b>Undo</b>: можно отменить ход. В режиме vs ИИ Undo обычно откатывает 2 хода (твой + бота).<br/>
+        <b>Ничья</b>: когда поле заполнено и победителя нет.<br/><br/>
+        <b>Подсказки</b>: для 3×3 доступны клавиши 1–9. Остальные размеры — клики/тапы.
+      `.trim();
+
+      $("rulesText").innerHTML = txt;
+      $("rulesModalBody").innerHTML = txt;
+    }
+
+    // =========================
+    // Leaderboard render (18)
+    // =========================
+    function renderLB(){
+      const list = getLB();
+      const box = $("lbList");
+      box.innerHTML = "";
+      if(!list.length){
+        box.innerHTML = `<div class="hint">Пока пусто. Сыграй пару игр.</div>`;
+        return;
       }
-      return score;
+
+      const wrap = document.createElement("div");
+      wrap.style.display="grid";
+      wrap.style.gap="8px";
+
+      list.forEach(item=>{
+        const d = new Date(item.ts);
+        const row = document.createElement("div");
+        row.className = "pill";
+        row.style.borderRadius="14px";
+        row.style.whiteSpace="normal";
+        row.style.lineHeight="1.35";
+        row.innerHTML = `
+          <span style="color:var(--muted)">${d.toLocaleString()}</span>
+          <span><b style="color:var(--text)">${escapeHtml(item.winner)}</b></span>
+          <span style="color:var(--muted)">(${escapeHtml(item.mode)}, ${item.size}, цель ${item.goal})</span>
+        `;
+        wrap.appendChild(row);
+      });
+      box.appendChild(wrap);
     }
 
-    // ====== New game / reset ======
-    function newGame(){
-      N = Number(sizeSelectEl.value);
-      K = N; // simplest: N in a row (11)
-      WIN_LINES = computeWinLines();
-
-      board = Array(N*N).fill(null);
-      history = [];
-      locked = false;
-
-      current = (firstSelectEl.value === "O") ? "O" : "X";
-
-      // persist prefs (3)
-      persist.prefs.size = N;
-      persist.prefs.first = current;
-      persist.prefs.mode = modeSelectEl.value;
-      persist.prefs.aiLevel = aiSelectEl.value;
-      savePersist();
-
-      buildGrid();
-      render();
-
-      // if bot starts as O and first is O => bot makes first move
-      if(mode==="bot" && current==="O"){
-        locked = true;
-        setTimeout(()=>botTurn(), 220);
-      }
+    // =========================
+    // Continue game (20)
+    // =========================
+    function updateContinueBtn(){
+      const has = !!localStorage.getItem(LS_GAME);
+      $("btnContinue").style.display = has ? "" : "none";
     }
 
-    function resetAll(){
-      persist = structuredClone(defaultPersist);
-      savePersist();
-      applyPrefsFromPersist(true);
-      newGame();
+    function continueGame(){
+      const saved = safeJSONParse(localStorage.getItem(LS_GAME), null);
+      if(!saved){ showToast("Нет сохранённой игры"); return; }
+
+      // restore
+      state.prefs = {...state.prefs, ...(saved.prefs||{})};
+      state.N = saved.N || state.prefs.size || 3;
+      state.K = saved.K || calcGoal(state.N);
+      state.players = saved.players || [];
+      state.turn = saved.turn || 0;
+      state.board = saved.board || Array(state.N*state.N).fill(null);
+      state.history = saved.history || [];
+      state.locked = false;
+      state.winLine = [];
+      state.winner = null;
+
+      savePrefs();
+      applyPrefsToUI();
+
+      buildBoard();
+      updateGameHUD();
+      setView("game");
+      showToast("Продолжили игру", 1200);
     }
 
-    function resetAnalytics(){
-      persist.analytics.movesTotal = 0;
-      persist.analytics.movesPerGameSum = 0;
-      persist.analytics.heat3 = Array(9).fill(0);
-      savePersist();
-      render();
+    // =========================
+    // Stats reset (14,23)
+    // =========================
+    function resetStats(){
+      state.stats = JSON.parse(JSON.stringify(defaultStats));
+      saveStats();
+      showToast("Статистика сброшена", 1200);
+      updateGameHUD();
     }
 
-    // ====== Events / Prefs ======
-    function applyPrefsFromPersist(initial=false){
-      // theme + retro + sound
-      themeSelectEl.value = persist.prefs.theme || "blue";
-      setTheme(themeSelectEl.value);
-
-      setRetro(!!persist.prefs.retro);
-      setSound(persist.prefs.soundOn !== false);
-
-      // mode + ai
-      modeSelectEl.value = persist.prefs.mode || "pvp";
-      aiSelectEl.value = persist.prefs.aiLevel || "easy";
-      sizeSelectEl.value = String(persist.prefs.size || 3);
-      firstSelectEl.value = persist.prefs.first || "X";
-
-      mode = modeSelectEl.value;
-      aiLevel = aiSelectEl.value;
-      aiPillEl.style.display = (mode === "bot") ? "" : "none";
-
-      if(initial){
-        retroBtnEl.textContent = persist.prefs.retro ? "Retro: On" : "Retro";
-      }
+    // =========================
+    // HTML escape
+    // =========================
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
     }
 
-    modeSelectEl.addEventListener("change", () => {
-      mode = modeSelectEl.value;
-      aiPillEl.style.display = (mode === "bot") ? "" : "none";
-      persist.prefs.mode = mode;
-      savePersist();
-      newGame();
-    });
-
-    aiSelectEl.addEventListener("change", () => {
-      aiLevel = aiSelectEl.value;
-      persist.prefs.aiLevel = aiLevel;
-      savePersist();
-      render();
-    });
-
-    sizeSelectEl.addEventListener("change", () => newGame());
-    firstSelectEl.addEventListener("change", () => newGame());
-
-    themeSelectEl.addEventListener("change", () => setTheme(themeSelectEl.value));
-
-    retroBtnEl.addEventListener("click", () => setRetro(!document.documentElement.classList.contains("retro")));
-    soundBtnEl.addEventListener("click", () => setSound(!soundOn));
-
-    undoBtn.addEventListener("click", undo);
-    newGameBtn.addEventListener("click", newGame);
-    resetAllBtn.addEventListener("click", resetAll);
-    resetAnalyticsBtn.addEventListener("click", resetAnalytics);
-
-    // Keyboard (only for 3x3) (20 already responsive, keyboard is bonus)
-    document.addEventListener("keydown", (e) => {
+    // =========================
+    // Keyboard (13) — 3x3 only
+    // =========================
+    document.addEventListener("keydown",(e)=>{
       if(e.repeat) return;
+      if(state.view!=="game") return;
+
       const k = e.key;
-      if(N===3 && k >= "1" && k <= "9"){
+      if(state.N===3 && k>="1" && k<="9"){
         playMove(Number(k)-1);
       }
-      if(k.toLowerCase() === "u") undo();
-      if(k.toLowerCase() === "r") newGame();
+      if(k.toLowerCase()==="u") undo();
+      if(k.toLowerCase()==="r") restart();
+      if(k==="Escape") togglePause(false);
     });
 
-    // ====== Init ======
-    applyPrefsFromPersist(true);
-    WIN_LINES = computeWinLines();
-    buildGrid();
-    newGame();
+    // =========================
+    // Pause overlay (10)
+    // =========================
+    function togglePause(open){
+      $("overlayPause").classList.toggle("active", open);
+    }
+
+    // =========================
+    // Wiring UI events
+    // =========================
+    function wire(){
+      fillSizeSelect();
+
+      // nav
+      $("btnHome").addEventListener("click", ()=>setView("home"));
+      $("btnBackHome2").addEventListener("click", ()=>setView("home"));
+      $("btnBackHome3").addEventListener("click", ()=>setView("home"));
+
+      // rules top
+      $("btnRulesTop").addEventListener("click", ()=>{
+        buildRulesText();
+        $("overlayRules").classList.add("active");
+      });
+      $("btnRulesFromSettings").addEventListener("click", ()=>{
+        buildRulesText();
+        $("overlayRules").classList.add("active");
+      });
+      $("btnCloseRules").addEventListener("click", ()=>$("overlayRules").classList.remove("active"));
+      $("btnFullRules").addEventListener("click", ()=>{
+        $("overlayRules").classList.remove("active");
+        buildRulesText();
+        setView("rules");
+      });
+      $("btnBackFromRules").addEventListener("click", ()=>setView("home"));
+
+      // home buttons
+      $("btnGoSettings").addEventListener("click", ()=>setView("settings"));
+      $("btnQuickStart").addEventListener("click", ()=>{
+        // quick start uses current prefs
+        applyPrefsToUI();
+        startGame(false);
+      });
+      $("btnContinue").addEventListener("click", continueGame);
+
+      $("btnLeaderboard").addEventListener("click", ()=>setView("lb"));
+      $("btnBackFromLB").addEventListener("click", ()=>setView("home"));
+      $("btnClearLB").addEventListener("click", ()=>{
+        saveLB([]);
+        renderLB();
+        showToast("Очищено", 900);
+      });
+
+      // settings changes
+      ["mode","size","ai","theme","sound","p1","p2","p3","first","first2"].forEach(id=>{
+        const el = $(id);
+        if(!el) return;
+        el.addEventListener("change", ()=>{
+          readUIToPrefs();
+          buildRulesText();
+        });
+        if(el.tagName==="INPUT"){
+          el.addEventListener("input", ()=>{
+            readUIToPrefs();
+          });
+        }
+      });
+
+      // start
+      $("btnStart").addEventListener("click", ()=>startGame(false));
+
+      // game menu buttons
+      $("btnUndo").addEventListener("click", undo);
+      $("btnRestart").addEventListener("click", restart);
+
+      $("btnPause").addEventListener("click", ()=>togglePause(true));
+      $("btnClosePause").addEventListener("click", ()=>togglePause(false));
+      $("btnUndo2").addEventListener("click", ()=>{ togglePause(false); undo(); });
+      $("btnRestart2").addEventListener("click", ()=>{ togglePause(false); restart(); });
+      $("btnToMenuFromPause").addEventListener("click", ()=>{ togglePause(false); setView("home"); });
+
+      // reset stats
+      $("btnResetStats").addEventListener("click", resetStats);
+    }
+
+    // =========================
+    // Init
+    // =========================
+    function init(){
+      // normalize stats structure
+      if(!state.stats.score) state.stats.score = {...defaultStats.score};
+      if(!state.stats.analytics) state.stats.analytics = {...defaultStats.analytics};
+      if(!Array.isArray(state.stats.analytics.heat3) || state.stats.analytics.heat3.length!==9){
+        state.stats.analytics.heat3 = Array(9).fill(0);
+      }
+
+      wire();
+      applyPrefsToUI();
+      buildRulesText();
+      updateContinueBtn();
+      renderSummary();
+
+      // small status pill
+      $("pillState").textContent = "Offline OK • Local Save";
+    }
+
+    init();
   </script>
 </body>
 </html>
