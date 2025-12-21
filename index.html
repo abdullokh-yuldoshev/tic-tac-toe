@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>tic-tac-toe</title>
+    
+
+  </head>
+    
+  <body>
+  <!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Крестики-нолики</title>
+  <style>
+    :root {
+      --bg: #0b0f18;
+      --card: #111827;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --border: #243044;
+      --accent: #60a5fa;
+      --win: #22c55e;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(1200px 800px at 20% 20%, #14213d 0%, var(--bg) 55%) no-repeat;
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      padding: 20px;
+    }
+
+    .app {
+      width: min(560px, 100%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+      backdrop-filter: blur(10px);
+    }
+
+    header {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0;
+      letter-spacing: .2px;
+    }
+
+    .sub {
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .right {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      border: 1px solid var(--border);
+      background: rgba(17, 24, 39, .6);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 13px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    select,
+    button {
+      border: 1px solid var(--border);
+      background: rgba(17, 24, 39, .8);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      outline: none;
+      transition: transform .04s ease, border-color .2s ease, background .2s ease;
+    }
+
+    button:hover,
+    select:hover {
+      border-color: #385075
+    }
+
+    button:active {
+      transform: translateY(1px)
+    }
+
+    button.primary {
+      border-color: rgba(96, 165, 250, .55);
+      background: rgba(96, 165, 250, .16);
+    }
+
+    button.danger {
+      border-color: rgba(239, 68, 68, .55);
+      background: rgba(239, 68, 68, .12);
+    }
+
+    .board-wrap {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(17, 24, 39, .55);
+      font-size: 14px;
+    }
+
+    .status b {
+      color: var(--accent)
+    }
+
+    .status .result.win b {
+      color: var(--win)
+    }
+
+    .status .result.lose b {
+      color: var(--danger)
+    }
+
+    .grid {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(17, 24, 39, .55);
+    }
+
+    .cell {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(2, 6, 23, .35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(34px, 9vw, 64px);
+      font-weight: 800;
+      user-select: none;
+      cursor: pointer;
+      transition: background .15s ease, border-color .2s ease, transform .04s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cell:hover {
+      border-color: #3a537a;
+      background: rgba(2, 6, 23, .5)
+    }
+
+    .cell:active {
+      transform: translateY(1px)
+    }
+
+    .cell.disabled {
+      cursor: not-allowed;
+      opacity: .85
+    }
+
+    .mark-x {
+      color: #93c5fd
+    }
+
+    .mark-o {
+      color: #fca5a5
+    }
+
+    .cell.win {
+      border-color: rgba(34, 197, 94, .65);
+      background: rgba(34, 197, 94, .10);
+      box-shadow: inset 0 0 0 1px rgba(34, 197, 94, .25);
+    }
+
+    footer {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .score {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .score span {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(17, 24, 39, .55);
+    }
+
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 8px;
+      background: rgba(2, 6, 23, .35);
+      color: var(--text);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" role="application" aria-label="Игра Крестики-нолики">
+    <header>
+      <div>
+        <h1>Крестики-нолики</h1>
+        <div class="sub">Кликни по клетке или нажми <span class="kbd">1–9</span> на клавиатуре.</div>
+      </div>
+      <div class="right">
+        <div class="pill" title="Кто ходит первым">
+          <span style="color:var(--muted)">Первый:</span>
+          <select id="firstSelect" aria-label="Кто ходит первым">
+            <option value="X">X</option>
+            <option value="O">O</option>
+          </select>
+        </div>
+        <button class="primary" id="newGameBtn">Новая игра</button>
+        <button class="danger" id="resetScoreBtn">Сброс счёта</button>
+      </div>
+    </header>
+
+    <div class="board-wrap">
+      <div class="status" aria-live="polite">
+        <div class="result" id="statusText">Ходит: <b id="turnText">X</b></div>
+        <div style="color:var(--muted)" id="hintText">Цель: 3 в ряд</div>
+      </div>
+
+      <div class="grid" id="grid" aria-label="Игровое поле 3 на 3"></div>
+    </div>
+
+    <footer>
+      <div class="score" aria-label="Счёт">
+        <span>Победы X: <b id="scoreX">0</b></span>
+        <span>Победы O: <b id="scoreO">0</b></span>
+        <span>Ничьи: <b id="scoreD">0</b></span>
+      </div>
+      <div>Подсказка: клавиши <span class="kbd">1</span>–<span class="kbd">9</span> соответствуют клеткам слева направо.</div>
+    </footer>
+  </div>
+
+  <script>
+    /** @type {("X"|"O"|null)[]} */
+    let board = Array(9).fill(null);
+    /** @type {"X"|"O"} */
+    let current = "X";
+    let locked = false;
+    const score = {
+      X: 0,
+      O: 0,
+      D: 0
+    };
+    const gridEl = document.getElementById("grid");
+    const turnTextEl = document.getElementById("turnText");
+    const statusTextEl = document.getElementById("statusText");
+    const hintTextEl = document.getElementById("hintText");
+    const firstSelectEl = document.getElementById("firstSelect");
+    const newGameBtn = document.getElementById("newGameBtn");
+    const resetScoreBtn = document.getElementById("resetScoreBtn");
+    const scoreXEl = document.getElementById("scoreX");
+    const scoreOEl = document.getElementById("scoreO");
+    const scoreDEl = document.getElementById("scoreD");
+    const WIN_LINES = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+
+    function buildGrid() {
+      gridEl.innerHTML = "";
+      for (let i = 0; i < 9; i++) {
+        const btn = document.createElement("button");
+        btn.className = "cell";
+        btn.type = "button";
+        btn.setAttribute("aria-label", `Клетка ${i+1}`);
+        btn.dataset.index = String(i);
+        btn.addEventListener("click", () => playMove(i));
+        gridEl.appendChild(btn);
+      }
+    }
+
+    function render() {
+      const cells = gridEl.querySelectorAll(".cell");
+      cells.forEach((cell, i) => {
+        const v = board[i];
+        cell.textContent = v ? v : "";
+        cell.classList.toggle("disabled", locked || !!v);
+        cell.classList.remove("win");
+        cell.classList.toggle("mark-x", v === "X");
+        cell.classList.toggle("mark-o", v === "O");
+      });
+      turnTextEl.textContent = current;
+      const resultClass = statusTextEl.classList;
+      resultClass.remove("win", "lose");
+      const win = getWinner();
+      if (win) {
+        locked = true;
+        const {
+          winner,
+          line
+        } = win;
+        if (winner === "D") {
+          statusTextEl.innerHTML = `Результат: <b>Ничья</b>`;
+          hintTextEl.textContent = "Нажми «Новая игра»";
+        } else {
+          statusTextEl.innerHTML = `Победил: <b>${winner}</b>`;
+          statusTextEl.classList.add("win");
+          hintTextEl.textContent = "Линия подсвечена. Нажми «Новая игра»";
+          // подсветка выигрышной линии
+          const cells = gridEl.querySelectorAll(".cell");
+          line.forEach(idx => cells[idx].classList.add("win"));
+        }
+      } else {
+        locked = false;
+        statusTextEl.innerHTML = `Ходит: <b>${current}</b>`;
+        hintTextEl.textContent = "Цель: 3 в ряд";
+      }
+      scoreXEl.textContent = String(score.X);
+      scoreOEl.textContent = String(score.O);
+      scoreDEl.textContent = String(score.D);
+    }
+
+    function getWinner() {
+      for (const line of WIN_LINES) {
+        const [a, b, c] = line;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return {
+            winner: board[a],
+            line
+          };
+        }
+      }
+      if (board.every(Boolean)) return {
+        winner: "D",
+        line: []
+      };
+      return null;
+    }
+
+    function playMove(i) {
+      if (locked) return;
+      if (board[i]) return;
+      board[i] = current;
+      const win = getWinner();
+      if (win) {
+        if (win.winner === "X") score.X++;
+        else if (win.winner === "O") score.O++;
+        else score.D++;
+      } else {
+        current = current === "X" ? "O" : "X";
+      }
+      render();
+    }
+
+    function newGame() {
+      board = Array(9).fill(null);
+      current = /** @type {"X"|"O"} */ (firstSelectEl.value === "O" ? "O" : "X");
+      locked = false;
+      render();
+    }
+
+    function resetScore() {
+      score.X = 0;
+      score.O = 0;
+      score.D = 0;
+      newGame();
+    }
+    // клавиатура: 1-9
+    document.addEventListener("keydown", (e) => {
+      if (e.repeat) return;
+      const k = e.key;
+      if (k >= "1" && k <= "9") {
+        const idx = Number(k) - 1;
+        playMove(idx);
+      }
+      if (k.toLowerCase() === "r") {
+        newGameBtn.click();
+      }
+    });
+    newGameBtn.addEventListener("click", newGame);
+    resetScoreBtn.addEventListener("click", resetScore);
+    buildGrid();
+    newGame();
+  </script>
+</body>
+
+</html>
+    
+  </body>
+  
+</html>
