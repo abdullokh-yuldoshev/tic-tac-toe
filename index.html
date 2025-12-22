@@ -532,7 +532,8 @@
             <div class="controlRow">
               <button class="ctrlBtn" id="btnUndo" type="button">↩ Отменить</button>
               <button class="ctrlBtn" id="btnRestart" type="button">⟲ Заново</button>
-              <button class="ctrlBtn" id="btnMenu" type="button">≡ Меню</button>
+              <!-- КНОПКА МЕНЮ УБРАНА В ПРОЦЕССЕ ИГРЫ (скрыта, остальное не трогаем) -->
+              <button class="ctrlBtn hidden" id="btnMenu" type="button">≡ Меню</button>
             </div>
           </div>
 
@@ -694,7 +695,7 @@
   const statusPill = $("statusPill");
   const btnUndo = $("btnUndo");
   const btnRestart = $("btnRestart");
-  const btnMenu = $("btnMenu");
+  const btnMenu = $("btnMenu"); // есть, но скрыт
   const boardEl = $("board");
 
   const modalBack = $("modalBack");
@@ -789,7 +790,7 @@
     btnExit.textContent = t.exit;
     btnUndo.textContent = t.undo;
     btnRestart.textContent = t.restart;
-    btnMenu.textContent = t.menu;
+    if(btnMenu) btnMenu.textContent = t.menu;
 
     renderHomeMeta();
     renderGameHeader();
@@ -836,7 +837,6 @@
       chip.textContent = t[m.key];
       chip.addEventListener("click", ()=>{
         settings.mode = m.id;
-        // bot name default
         if(settings.mode==="ai" && (!inpP2.value.trim())) inpP2.value = "Bot";
         saveSettings();
         applySettingsToForm();
@@ -845,7 +845,6 @@
       modeChips.appendChild(chip);
     });
 
-    // goal options 3..size
     settings.goal = clamp(settings.goal, 3, settings.size, Math.min(5, settings.size));
     selGoal.innerHTML = "";
     for(let g=3; g<=settings.size; g++){
@@ -856,10 +855,8 @@
     }
     selGoal.value = String(settings.goal);
 
-    // AI visible only in ai mode
     aiRow.style.display = (settings.mode==="ai") ? "grid" : "none";
 
-    // names
     inpP1.value = settings.p1;
     inpP2.value = settings.p2;
     inpP3.value = settings.p3;
@@ -1010,45 +1007,164 @@
     }
   }
 
+  /* BOT AI */
   function botMove(){
     if(gameOver) return;
+
+    const move = pickBotMove(settings.ai);
+    if(move == null) return;
+    makeMove(move);
+  }
+
+  function pickBotMove(level){
     const empties = [];
     for(let i=0;i<board.length;i++) if(!board[i]) empties.push(i);
-    if(!empties.length) return;
+    if(!empties.length) return null;
 
     const size = settings.size, goal = settings.goal;
-    const bot = "O", me = "X";
+    const BOT = "O", ME = "X";
 
-    // win
+    const isWinningMove = (idx, sym)=>{
+      board[idx] = sym;
+      const r = checkWin(board, size, goal);
+      board[idx] = "";
+      return r.win;
+    };
+
     for(const idx of empties){
-      board[idx]=bot;
-      const r = checkWin(board,size,goal);
-      board[idx]="";
-      if(r.win){ makeMove(idx); return; }
+      if(isWinningMove(idx, BOT)) return idx;
     }
-    // block
+
+    if(level === "easy"){
+      if(Math.random() < 0.25){
+        for(const idx of empties){
+          if(isWinningMove(idx, ME)) return idx;
+        }
+      }
+      return empties[Math.floor(Math.random() * empties.length)];
+    }
+
+    if(level === "normal"){
+      for(const idx of empties){
+        if(isWinningMove(idx, ME)) return idx;
+      }
+
+      if(Math.random() < 0.15){
+        return empties[Math.floor(Math.random() * empties.length)];
+      }
+
+      let best = empties[0], bestScore = -1e18;
+      for(const idx of empties){
+        board[idx] = BOT;
+        const sc = scoreBoard(BOT, ME, "normal");
+        board[idx] = "";
+        if(sc > bestScore){ bestScore = sc; best = idx; }
+      }
+      return best;
+    }
+
     for(const idx of empties){
-      board[idx]=me;
-      const r = checkWin(board,size,goal);
-      board[idx]="";
-      if(r.win){ makeMove(idx); return; }
+      if(isWinningMove(idx, ME)) return idx;
     }
-    // simple heuristic: center preference
-    let best = empties[0], bestScore = -1e9;
-    const center = (size-1)/2;
+
+    const style = (level === "expert") ? "expert" : "hard";
+    const noise = (style === "hard") ? 0.10 : 0.03;
+
+    let bestMove = empties[0], bestVal = -1e18;
+
     for(const idx of empties){
-      const r = Math.floor(idx/size), c = idx%size;
-      let sc = -(Math.abs(r-center)+Math.abs(c-center));
-      if(sc>bestScore){ bestScore=sc; best=idx; }
+      board[idx] = BOT;
+
+      let worst = 1e18;
+      for(let j=0;j<board.length;j++){
+        if(board[j]) continue;
+
+        board[j] = ME;
+
+        let val;
+        if(checkWin(board, size, goal).win){
+          val = -1e15;
+        }else{
+          val = scoreBoard(BOT, ME, style);
+        }
+
+        board[j] = "";
+
+        if(val < worst) worst = val;
+        if(worst <= bestVal) break;
+      }
+
+      board[idx] = "";
+
+      const finalVal = worst * (1 - noise + Math.random()*noise*2);
+      if(finalVal > bestVal){
+        bestVal = finalVal;
+        bestMove = idx;
+      }
     }
-    makeMove(best);
+
+    return bestMove;
+  }
+
+  function scoreBoard(BOT, ME, style){
+    const size = settings.size, goal = settings.goal;
+
+    const wA = (style === "expert") ? 1.20 : 1.00;
+    const wD = (style === "expert") ? 1.30 : 1.05;
+
+    let score = 0;
+
+    const center = (size - 1) / 2;
+    for(let i=0;i<board.length;i++){
+      const v = board[i];
+      if(!v) continue;
+      const r = Math.floor(i/size), c = i % size;
+      const dist = Math.abs(r-center) + Math.abs(c-center);
+      const bonus = (size*2 - dist);
+      if(v === BOT) score += 0.30 * bonus;
+      else if(v === ME) score -= 0.28 * bonus;
+    }
+
+    const dirs = [[1,0],[0,1],[1,1],[1,-1]];
+    const pow = x => x*x*x;
+
+    for(let r=0;r<size;r++){
+      for(let c=0;c<size;c++){
+        for(const [dr,dc] of dirs){
+          const endR = r + dr*(goal-1);
+          const endC = c + dc*(goal-1);
+          if(endR<0||endR>=size||endC<0||endC>=size) continue;
+
+          let b=0,m=0,e=0;
+          for(let k=0;k<goal;k++){
+            const v = board[(r+dr*k)*size + (c+dc*k)];
+            if(v===BOT) b++;
+            else if(v===ME) m++;
+            else e++;
+          }
+
+          if(b>0 && m>0) continue;
+
+          if(b>0 && m===0){
+            score += wA * pow(b) * 6;
+            if(b === goal-1 && e === 1) score += wA * 5000;
+          }
+
+          if(m>0 && b===0){
+            score -= wD * pow(m) * 7;
+            if(m === goal-1 && e === 1) score -= wD * 6500;
+          }
+        }
+      }
+    }
+
+    return score;
   }
 
   function doUndo(){
     if(!history.length) return;
 
     const mode = getMode();
-    // if game ended — reopen
     if(gameOver){ gameOver=false; winLine=[]; }
 
     const popOne = ()=>{
@@ -1060,11 +1176,9 @@
 
     popOne();
     if(mode.ai){
-      // remove bot move too if exists
       if(history.length && history[history.length-1].player === 1) popOne();
     }
 
-    // recompute win
     const res = checkWin(board, settings.size, settings.goal);
     if(res.win){ gameOver=true; winLine=res.line; }
     else { gameOver=false; winLine=[]; }
@@ -1201,14 +1315,8 @@
     }
   });
 
-  btnMenu.addEventListener("click", async ()=>{
-    const t = I18N[settings.lang];
-    const ok = await modalConfirm(t.confirmExit, t.menu);
-    if(ok){
-      clearGame();
-      go("home");
-    }
-  });
+  // КНОПКУ МЕНЮ В ИГРЕ УБРАЛИ — обработчик не нужен.
+  // (оставили элемент скрытым, чтобы ничего не поломалось)
 
   btnRestart.addEventListener("click", async ()=>{
     const t = I18N[settings.lang];
