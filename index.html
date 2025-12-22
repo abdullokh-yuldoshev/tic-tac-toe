@@ -1,1808 +1,1241 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Tic-Tac-Toe+</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-  <!-- Force refresh / reduce caching (useful for Telegram WebView too) -->
+  <!-- Анти-кэш -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
+  <title>Tic-Tac-Toe+</title>
+
   <style>
     :root{
-      --teal1:#33d1cf;
-      --teal2:#14b8b1;
-      --teal3:#0aa6a1;
-
-      --bg:#eef6f7;
-      --bg2:#e9f2f3;
-
-      --card:#f7fbfc;
-      --card2:#ffffff;
-
-      --text:#0f172a;
-      --muted:#6b7280;
-      --line:rgba(15,23,42,.10);
-
-      --shadow: 0 18px 50px rgba(0,0,0,.14);
-      --shadowSoft: 0 14px 36px rgba(0,0,0,.10);
-
-      --pill:#0f2d31;
-      --pillText:#d8f7f6;
-
-      --btn:#21c7c4;
-      --btnText:#ffffff;
-
-      --chip:#eef6f7;
-      --chipText:#0f172a;
-
-      --focus: rgba(33,199,196,.35);
-
-      --radiusXL: 26px;
-      --radiusL: 18px;
-      --radiusM: 14px;
-      --radiusS: 12px;
-
-      --gridGap: 8px;
-      --cellSize: 40px;
-      --cellRadius: 14px;
-
       --safeTop: env(safe-area-inset-top, 0px);
       --safeBottom: env(safe-area-inset-bottom, 0px);
 
-      --textureOpacity: .08;
+      --rXL: 26px;
+      --rLG: 18px;
+      --rMD: 14px;
+
+      --shadow1: 0 18px 40px rgba(0,0,0,.12);
+      --shadow2: 0 10px 24px rgba(0,0,0,.10);
+
+      --teal1:#22c1ba;
+      --teal2:#1aa8a2;
+
+      --text:#0e1b1a;
+      --muted: rgba(14,27,26,.62);
+      --card: rgba(255,255,255,.90);
+      --stroke: rgba(14,27,26,.12);
+
+      --bg1:#eaf6f6;
+      --bg2:#f4fbfb;
+
+      --btnBg: rgba(255,255,255,.55);
+      --btnText: rgba(14,27,26,.92);
+
+      --last: rgba(34,193,186,.12);
+      --win: rgba(34,193,186,.22);
     }
 
-    /* Dark theme overrides */
-    html[data-theme="dark"], body[data-theme="dark"]{
-      --bg:#06161a;
-      --bg2:#071a1f;
+    [data-theme="dark"]{
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.62);
+      --card: rgba(15,28,30,.86);
+      --stroke: rgba(255,255,255,.12);
 
-      --card:#0b2328;
-      --card2:#0c262c;
+      --bg1:#071214;
+      --bg2:#0a1b1d;
 
-      --text:#eaf7f7;
-      --muted:rgba(234,247,247,.65);
-      --line:rgba(234,247,247,.12);
+      --btnBg: rgba(0,0,0,.22);
+      --btnText: rgba(255,255,255,.92);
 
-      --shadow: 0 22px 60px rgba(0,0,0,.50);
-      --shadowSoft: 0 18px 46px rgba(0,0,0,.40);
+      --shadow1: 0 18px 40px rgba(0,0,0,.45);
+      --shadow2: 0 10px 24px rgba(0,0,0,.38);
 
-      --chip:#0a2126;
-      --chipText:#eaf7f7;
-
-      --pill:#0a2126;
-      --pillText:#eaf7f7;
-
-      --textureOpacity: .10;
+      --last: rgba(255,255,255,.08);
+      --win: rgba(34,193,186,.22);
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-      background: var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       color: var(--text);
-      overflow-x:hidden;
-    }
-
-    /* Background glow + subtle texture */
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      z-index:-2;
+      overflow:hidden;
       background:
-        radial-gradient(900px 600px at 75% -10%, rgba(34,199,199,.24), rgba(0,0,0,0) 60%),
-        radial-gradient(800px 600px at -10% 25%, rgba(16,168,168,.18), rgba(0,0,0,0) 62%),
-        radial-gradient(1000px 700px at 50% 115%, rgba(0,0,0,.12), rgba(0,0,0,0) 62%);
-      opacity:1;
+        radial-gradient(1100px 650px at 15% 0%, rgba(34,193,186,.20) 0%, rgba(34,193,186,0) 55%),
+        radial-gradient(900px 560px at 85% 20%, rgba(34,193,186,.16) 0%, rgba(34,193,186,0) 60%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
     }
 
-    /* subtle repeating texture (CSS-only, no images) */
-    body::after{
-      content:"";
-      position:fixed;
-      inset:-20px;
-      pointer-events:none;
-      z-index:-1;
-      opacity: var(--textureOpacity);
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 55%),
-        repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 1px, rgba(0,0,0,0) 1px 10px),
-        repeating-linear-gradient(0deg, rgba(0,0,0,.10) 0 1px, rgba(0,0,0,0) 1px 12px);
-      mix-blend-mode: overlay;
-      filter: blur(.2px);
-      transform: translateZ(0);
+    /* Важно для WebView/Telegram: */
+    button, .chip, .tab, .cell{
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
-    /* App frame */
     .app{
-      min-height:100%;
+      height:100%;
+      width:100%;
       display:flex;
-      flex-direction:column;
       align-items:center;
-      padding: calc(18px + var(--safeTop)) 16px calc(96px + var(--safeBottom));
-      gap: 16px;
+      justify-content:center;
+      padding: calc(var(--safeTop) + 18px) 16px calc(var(--safeBottom) + 18px);
     }
 
-    /* Centered page container */
-    .pageWrap{
+    .stage{
       width:min(520px, 100%);
       display:flex;
       flex-direction:column;
-      gap: 14px;
-      align-items:center;
+      gap:14px;
+      position:relative;
+      z-index: 1; /* чтоб точно было выше фона */
     }
 
-    /* Top chips (logo / version) */
-    .topChips{
-      width:min(520px, 100%);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-    }
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 14px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.18);
-      color: rgba(255,255,255,.94);
-      box-shadow: 0 12px 30px rgba(0,0,0,.18);
-      backdrop-filter: blur(10px);
-    }
-    html[data-theme="dark"] .chip, body[data-theme="dark"] .chip{
-      background: rgba(255,255,255,.10);
-      color: rgba(255,255,255,.95);
-    }
-    .chipLogo{
-      width:34px;height:34px;border-radius:999px;
-      background: rgba(255,255,255,.20);
-      display:grid;place-items:center;
-      font-weight:800;
-      letter-spacing:.5px;
-    }
-    .chipText{
+    .center{
       display:flex;
       flex-direction:column;
-      line-height:1.1;
+      align-items:center;
+      gap:14px;
+      width:100%;
     }
-    .chipText b{font-size:14px}
-    .chipText small{font-size:11px; opacity:.8}
 
-    /* Main teal header card (Home) */
     .hero{
       width:100%;
-      border-radius: var(--radiusXL);
-      padding: 18px 18px 16px;
-      background:
-        radial-gradient(180px 180px at 90% 25%, rgba(255,255,255,.22), rgba(255,255,255,0) 60%),
-        radial-gradient(220px 220px at 65% 5%, rgba(255,255,255,.18), rgba(255,255,255,0) 62%),
-        linear-gradient(135deg, var(--teal1), var(--teal2) 52%, var(--teal3));
-      color:#fff;
-      box-shadow: var(--shadow);
+      border-radius: var(--rXL);
+      background: linear-gradient(135deg, var(--teal1) 0%, var(--teal2) 100%);
+      box-shadow: var(--shadow1);
+      padding: 18px;
       position:relative;
       overflow:hidden;
     }
+    /* Декор НЕ должен ловить клики */
     .hero::after{
       content:"";
       position:absolute;
-      inset:0;
+      right:-60px;
+      top:-40px;
+      width:180px;
+      height:180px;
+      border-radius:999px;
+      background: rgba(255,255,255,.18);
       pointer-events:none;
-      background:
-        radial-gradient(260px 260px at 88% 40%, rgba(255,255,255,.18), rgba(255,255,255,0) 68%),
-        radial-gradient(180px 180px at 98% 10%, rgba(255,255,255,.16), rgba(255,255,255,0) 70%);
-      opacity:.9;
     }
-    .heroInner{position:relative; z-index:1}
-    .heroTitle{
-      font-size: 28px;
-      font-weight: 900;
-      margin: 2px 0 6px;
-      letter-spacing:-.4px;
-    }
-    .heroSub{
-      font-size: 14px;
-      opacity:.92;
-      margin:0 0 12px;
-      line-height:1.25;
-    }
-    .heroBtns{
-      display:flex;
-      gap: 12px;
-      flex-wrap:wrap;
-    }
+
+    .heroKicker{font-size:13px; color:rgba(255,255,255,.90); font-weight:700;}
+    .heroTitle{margin:6px 0 0; font-size:34px; line-height:1.05; color:rgba(255,255,255,.96); font-weight:900;}
+    .heroMeta{margin-top:10px; color:rgba(255,255,255,.92); font-size:14px; font-weight:700; line-height:1.35;}
+    .heroActions{margin-top:14px; display:flex; gap:12px; flex-wrap:wrap;}
 
     .btn{
+      appearance:none;
       border:none;
-      outline:none;
       cursor:pointer;
-      border-radius: 999px;
+      border-radius:999px;
       padding: 12px 16px;
-      font-weight: 800;
-      font-size: 14px;
       display:inline-flex;
       align-items:center;
-      gap: 10px;
-      transition: transform .08s ease, box-shadow .12s ease, opacity .12s ease, background .12s ease;
+      justify-content:center;
+      gap:10px;
+      font-weight:900;
+      font-size:15px;
       user-select:none;
-      -webkit-tap-highlight-color: transparent;
+      transition: transform .06s ease, opacity .12s ease;
+      position:relative;
+      z-index: 2; /* чтоб точно кликабельны */
     }
-    .btn:active{transform: translateY(1px)}
+    .btn:active{transform:scale(.98)}
     .btnPrimary{
-      background: rgba(255,255,255,.20);
-      color:#fff;
-      box-shadow: 0 12px 26px rgba(0,0,0,.16);
+      background: rgba(255,255,255,.22);
+      color: rgba(255,255,255,.95);
+      border: 1px solid rgba(255,255,255,.28);
       backdrop-filter: blur(10px);
     }
-    .btnPrimary:hover{opacity:.95}
-    .btnGhost{
-      background: rgba(0,0,0,.18);
-      color: rgba(255,255,255,.92);
-      box-shadow: 0 12px 26px rgba(0,0,0,.14);
-      backdrop-filter: blur(10px);
-    }
-    .btnGhost[disabled]{
-      opacity:.55; cursor:not-allowed;
-      transform:none;
-    }
+    .btnDisabled{opacity:.45; cursor:not-allowed;}
 
-    .btnSolid{
-      background: var(--btn);
-      color: var(--btnText);
-      box-shadow: 0 14px 34px rgba(0,0,0,.14);
-    }
-    .btnSoft{
-      background: var(--card2);
-      color: var(--text);
-      border: 1px solid var(--line);
-      box-shadow: 0 10px 22px rgba(0,0,0,.08);
-    }
-
-    /* Settings card */
-    .card{
+    .panel{
       width:100%;
-      border-radius: 22px;
-      background: var(--card2);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadowSoft);
+      border-radius: var(--rXL);
+      background: var(--card);
+      box-shadow: var(--shadow2);
+      border: 1px solid var(--stroke);
       padding: 16px;
+      position:relative;
+      z-index:2;
     }
 
-    .cardHeader{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom: 10px;
-    }
-    .cardHeader h3{
-      margin:0;
-      font-size: 18px;
-      letter-spacing:-.2px;
-    }
-    .cardHeader .hint{
-      font-size:12px;
-      color: var(--muted);
-      margin-top:4px;
-    }
+    .panelHeader{display:flex; justify-content:space-between; gap:12px; align-items:baseline; margin-bottom:10px;}
+    .panelTitle{margin:0; font-size:26px; font-weight:950;}
+    .panelHint{font-size:13px; color:var(--muted); font-weight:700;}
 
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    @media (max-width:520px){
-      .grid2{grid-template-columns: 1fr}
-    }
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+    @media(max-width:420px){ .grid2{grid-template-columns:1fr;} .heroTitle{font-size:30px;} }
 
-    label{
-      display:flex;
-      flex-direction:column;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-    select, input{
+    .field{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+    .label{font-size:13px; color:var(--muted); font-weight:800;}
+
+    select,input{
       width:100%;
+      padding: 12px;
+      font-size:16px;
       border-radius: 14px;
-      border: 1px solid var(--line);
-      background: var(--card);
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.55);
       color: var(--text);
-      padding: 12px 12px;
-      font-size: 16px;
       outline:none;
-      box-shadow: 0 10px 22px rgba(0,0,0,.06) inset;
     }
-    select:focus, input:focus{
-      box-shadow: 0 0 0 4px var(--focus);
-      border-color: rgba(33,199,196,.55);
-    }
-
-    .modeRow{
-      display:flex;
-      gap: 10px;
-      flex-wrap:wrap;
-      margin-top: 6px;
-    }
-    .pill{
-      cursor:pointer;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: var(--card);
+    [data-theme="dark"] select, [data-theme="dark"] input{
+      background: rgba(0,0,0,.22);
       color: var(--text);
-      padding: 10px 12px;
-      font-weight: 900;
-      font-size: 14px;
+    }
+
+    .chips{display:flex; flex-wrap:wrap; gap:10px;}
+    .chip{
+      padding: 11px 14px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.55);
+      font-weight:900;
+      cursor:pointer;
       user-select:none;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
+      position:relative;
+      z-index:3;
     }
-    .pill:active{transform: translateY(1px)}
-    .pill.active{
-      background: rgba(33,199,196,.12);
-      border-color: rgba(33,199,196,.55);
-      box-shadow: 0 10px 22px rgba(0,0,0,.08);
-    }
-
-    .saveRow{
-      margin-top: 14px;
-      display:flex;
-      justify-content:flex-start;
-    }
-    .saveBtn{
-      min-width: 190px;
+    [data-theme="dark"] .chip{background: rgba(0,0,0,.18);}
+    .chip:active{transform:scale(.98)}
+    .chipOn{
+      border-color: rgba(34,193,186,.55);
+      background: rgba(34,193,186,.10);
+      box-shadow: 0 0 0 3px rgba(34,193,186,.10) inset;
     }
 
-    /* Bottom navigation (only Home/Settings) */
-    .bottomNav{
-      position:fixed;
-      left:50%;
-      transform: translateX(-50%);
-      bottom: calc(12px + var(--safeBottom));
-      width: min(520px, calc(100% - 32px));
-      background: #0c2a30;
-      border-radius: 20px;
+    .saveRow{margin-top:14px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
+    .btnSave{
+      background: linear-gradient(180deg, rgba(34,193,186,1) 0%, rgba(26,168,162,1) 100%);
+      color: rgba(255,255,255,.96);
+      border:none;
+      padding: 13px 18px;
+      font-size:16px;
+      font-weight:950;
+    }
+    .mini{font-size:12px; color:var(--muted); font-weight:800;}
+
+    .tabbar{
+      width:100%;
+      border-radius:999px;
       padding: 10px;
+      background: rgba(15,28,30,.10);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow2);
       display:flex;
-      gap: 10px;
-      box-shadow: 0 18px 50px rgba(0,0,0,.28);
-      border: 1px solid rgba(255,255,255,.08);
-      z-index:50;
+      gap:10px;
+      position:relative;
+      z-index:2;
     }
-    html[data-theme="dark"] .bottomNav, body[data-theme="dark"] .bottomNav{
-      background: #081d22;
-      border-color: rgba(255,255,255,.08);
-    }
+    [data-theme="dark"] .tabbar{background: rgba(0,0,0,.25);}
+
     .tab{
       flex:1;
       border:none;
-      cursor:pointer;
-      border-radius: 16px;
-      padding: 12px 12px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 10px;
-      font-weight: 900;
-      font-size: 15px;
       background: transparent;
-      color: rgba(234,247,247,.70);
-      transition: background .12s ease, color .12s ease, transform .08s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .tab:active{transform: translateY(1px)}
-    .tab.active{
-      background: rgba(255,255,255,.08);
-      color: #eaf7f7;
-      box-shadow: 0 12px 26px rgba(0,0,0,.20);
-    }
-
-    .hidden{display:none !important}
-
-    /* GAME VIEW */
-    .gameWrap{
-      width:min(740px, 100%);
-      display:flex;
-      flex-direction:column;
-      gap: 12px;
-      align-items:center;
-    }
-
-    .gameTop{
-      width:min(520px, 100%);
-      border-radius: 22px;
-      background: var(--card2);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadowSoft);
-      padding: 14px;
-    }
-    .gameTopHeader{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap: 10px;
-    }
-    .turnLine{
-      font-weight: 900;
-      font-size: 16px;
-      margin:0;
-      line-height:1.15;
-    }
-    .metaLine{
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-    }
-    .exitBtn{
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: var(--card);
-      color: var(--text);
-      padding: 10px 12px;
-      font-weight: 900;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .gameControls{
-      margin-top: 12px;
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      align-items:center;
-    }
-    @media (max-width:520px){
-      .gameControls{
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .miniBtns{
-      display:flex;
-      gap: 10px;
-      flex-wrap:wrap;
-    }
-    .miniBtn{
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: var(--card);
-      color: var(--text);
-      padding: 10px 12px;
-      font-weight: 900;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .boardCard{
-      width:min(520px, 100%);
-      border-radius: 22px;
-      background: var(--card2);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadowSoft);
-      padding: 14px;
-    }
-
-    /* Random "map-like" background behind the grid (CSS only) */
-    .boardBg{
-      border-radius: 20px;
-      padding: 12px;
-      background:
-        radial-gradient(260px 200px at 18% 22%, rgba(33,199,196,.20), rgba(0,0,0,0) 60%),
-        radial-gradient(300px 260px at 78% 40%, rgba(33,199,196,.16), rgba(0,0,0,0) 60%),
-        radial-gradient(240px 240px at 46% 80%, rgba(0,0,0,.06), rgba(0,0,0,0) 62%),
-        linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.74));
-      border: 1px solid var(--line);
-      position:relative;
-      overflow:hidden;
-    }
-    html[data-theme="dark"] .boardBg, body[data-theme="dark"] .boardBg{
-      background:
-        radial-gradient(260px 200px at 18% 22%, rgba(33,199,196,.18), rgba(0,0,0,0) 60%),
-        radial-gradient(300px 260px at 78% 40%, rgba(33,199,196,.12), rgba(0,0,0,0) 60%),
-        radial-gradient(240px 240px at 46% 80%, rgba(0,0,0,.45), rgba(0,0,0,0) 62%),
-        linear-gradient(180deg, rgba(10,33,38,.94), rgba(8,26,31,.94));
-    }
-    .boardBg::after{
-      content:"";
-      position:absolute;
-      inset:-40px;
-      opacity:.18;
-      pointer-events:none;
-      transform: rotate(-7deg);
-      background:
-        repeating-linear-gradient(0deg, rgba(255,255,255,.12) 0 1px, rgba(255,255,255,0) 1px 14px),
-        repeating-linear-gradient(90deg, rgba(0,0,0,.10) 0 1px, rgba(0,0,0,0) 1px 18px);
-      mix-blend-mode: overlay;
-      filter: blur(.2px);
-    }
-
-    .grid{
-      position:relative;
-      display:grid;
-      gap: var(--gridGap);
-      justify-content:center;
-      align-content:center;
-      padding: 8px;
-      z-index:1;
-    }
-
-    .cell{
-      width: var(--cellSize);
-      height: var(--cellSize);
-      border-radius: var(--cellRadius);
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.80);
-      display:grid;
-      place-items:center;
-      font-weight: 1000;
-      font-size: 18px;
+      border-radius:999px;
+      padding: 12px 14px;
+      font-weight:950;
       cursor:pointer;
       user-select:none;
-      -webkit-tap-highlight-color: transparent;
-      box-shadow: 0 10px 22px rgba(0,0,0,.06);
-      transition: transform .06s ease, background .12s ease;
+      color: var(--btnText);
+      position:relative;
+      z-index:3;
     }
-    html[data-theme="dark"] .cell, body[data-theme="dark"] .cell{
-      background: rgba(255,255,255,.06);
-      box-shadow: 0 10px 20px rgba(0,0,0,.22);
-    }
-    .cell:active{transform: translateY(1px)}
-    .cell.disabled{cursor:default; opacity:.92}
-
-    .markX{ color: #0f172a; }
-    html[data-theme="dark"] .markX, body[data-theme="dark"] .markX{ color: #eaf7f7; }
-
-    .markO{ color: #1aa8a4; }
-
-    .markA{ color: #7c3aed; } /* player 3 */
-    .markB{ color: #f59e0b; } /* player 4 */
-
-    .toast{
-      width:min(520px,100%);
-      border-radius: 18px;
-      padding: 12px 14px;
-      background: var(--card2);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadowSoft);
-      color: var(--text);
-      font-weight: 900;
-      text-align:center;
+    .tab:active{transform:scale(.985)}
+    .tabOn{
+      background: rgba(34,193,186,.14);
+      border: 1px solid rgba(34,193,186,.35);
     }
 
-    /* Compact on small screens for bigger boards */
-    @media (max-width:420px){
-      :root{ --cellSize: 34px; --gridGap: 7px; --cellRadius: 13px; }
+    /* GAME */
+    .gameWrap{width:100%; display:flex; flex-direction:column; gap:12px;}
+    .gameTop{
+      width:100%;
+      border-radius: var(--rXL);
+      background: var(--card);
+      box-shadow: var(--shadow2);
+      border: 1px solid var(--stroke);
+      padding: 14px;
+      position:relative;
+      z-index:2;
     }
-    @media (max-width:360px){
-      :root{ --cellSize: 30px; --gridGap: 6px; --cellRadius: 12px; }
+    .topRow{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
+    .turnTitle{margin:0; font-size:22px; font-weight:950;}
+    .subLine{margin-top:4px; font-size:14px; color:var(--muted); font-weight:800;}
+    .exitBtn{
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: var(--btnBg);
+      color: var(--btnText);
+      font-weight:950;
+      padding: 10px 14px;
+      cursor:pointer;
+      user-select:none;
+      position:relative;
+      z-index:3;
+    }
+    .exitBtn:active{transform:scale(.98)}
+
+    .goalRow{margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .goalSelect{flex:1; min-width: 220px;}
+    .statusPill{
+      margin-left:auto;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: var(--btnBg);
+      padding: 10px 12px;
+      font-weight:950;
+      color: var(--btnText);
+      user-select:none;
+      position:relative;
+      z-index:2;
+    }
+
+    .controlRow{margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;}
+    .ctrlBtn{
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: var(--btnBg);
+      color: var(--btnText);
+      font-weight:950;
+      padding: 10px 14px;
+      cursor:pointer;
+      user-select:none;
+      position:relative;
+      z-index:3;
+    }
+    .ctrlBtn:active{transform:scale(.98)}
+    .ctrlBtn[disabled]{opacity:.45; cursor:not-allowed;}
+
+    .boardCard{
+      width:100%;
+      border-radius: var(--rXL);
+      background: var(--card);
+      box-shadow: var(--shadow2);
+      border: 1px solid var(--stroke);
+      padding: 14px;
+      position:relative;
+      z-index:2;
+    }
+    .board{
+      width:100%;
+      aspect-ratio:1/1;
+      display:grid;
+      gap:8px;
+      padding:10px;
+      border-radius: 22px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.02);
+    }
+    [data-theme="dark"] .board{background: rgba(255,255,255,.04);}
+
+    .cell{
+      border-radius: 16px;
+      border: 1px solid rgba(14,27,26,.10);
+      background: rgba(255,255,255,.62);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:950;
+      font-size: clamp(16px, 3vw, 26px);
+      cursor:pointer;
+      user-select:none;
+      position:relative;
+      z-index:1;
+    }
+    [data-theme="dark"] .cell{
+      background: rgba(0,0,0,.22);
+      border-color: rgba(255,255,255,.10);
+    }
+    .cell:active{transform:scale(.98)}
+    .cellDisabled{cursor:not-allowed; opacity:.9;}
+    .cellLast{background: var(--last); border-color: rgba(34,193,186,.40);}
+    .cellWin{background: var(--win); border-color: rgba(34,193,186,.55);}
+
+    .hidden{display:none !important;}
+
+    /* MODAL: когда скрыта — не перехватывает клики */
+    .modalBack{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.40);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index: 50;
+    }
+    .modalBack.on{display:flex;}
+    .modal{
+      width:min(420px, 100%);
+      border-radius: 22px;
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow1);
+      padding: 14px;
+    }
+    .modalTitle{margin:0; font-size:18px; font-weight:950;}
+    .modalText{margin:8px 0 12px; color:var(--muted); font-size:14px; font-weight:700; line-height:1.35;}
+    .modalBtns{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;}
+    .btnPlain{
+      background: var(--btnBg);
+      color: var(--btnText);
+      border: 1px solid var(--stroke);
+      font-weight:950;
     }
   </style>
 </head>
 
 <body>
-  <div id="app" class="app" data-theme="light">
-    <!-- Top chips -->
-    <div class="topChips" id="topChips">
-      <div class="chip">
-        <div class="chipLogo">TT</div>
-        <div class="chipText">
-          <b id="appName">Tic-Tac-Toe+</b>
-          <small id="appVer">v0</small>
-        </div>
-      </div>
-      <!-- (no language/theme buttons here — per your request) -->
-      <div style="display:flex; gap:10px; align-items:center">
-        <div class="chip" id="miniInfo" title="Version / build">
-          <small id="miniBuild">build</small>
-        </div>
-      </div>
-    </div>
+  <div class="app">
+    <div class="stage">
 
-    <!-- HOME PAGE (centered green block only) -->
-    <div class="pageWrap" id="homePage">
-      <div class="hero">
-        <div class="heroInner">
-          <div style="font-weight:900; font-size:13px; opacity:.92" id="homeLabel">Главная</div>
+      <!-- HOME -->
+      <div id="screenHome" class="center">
+        <div class="hero">
+          <div class="heroKicker" id="homeKicker">Главная</div>
           <div class="heroTitle" id="homeTitle">Tic-Tac-Toe+</div>
-          <div class="heroSub" id="homeSub"></div>
-
-          <div class="heroBtns">
-            <button class="btn btnPrimary" id="startBtn">
-              ▶ <span id="startBtnTxt">Начать игру</span>
-            </button>
-            <button class="btn btnGhost" id="continueBtn" disabled>
-              ▶ <span id="continueBtnTxt">Продолжить</span>
+          <div class="heroMeta" id="homeMeta"></div>
+          <div class="heroActions">
+            <button id="btnStart" class="btn btnPrimary" type="button">
+              <span>▶</span><span id="btnStartText">Начать игру</span>
             </button>
           </div>
         </div>
+
+        <div class="tabbar">
+          <button id="tabHome" class="tab tabOn" type="button">⌂ <span id="tabHomeText">Главная</span></button>
+          <button id="tabSettings" class="tab" type="button">⚙ <span id="tabSettingsText">Настройки</span></button>
+        </div>
       </div>
+
+      <!-- SETTINGS -->
+      <div id="screenSettings" class="center hidden">
+        <div class="panel">
+          <div class="panelHeader">
+            <div class="panelTitle" id="settingsTitle">Настройки</div>
+            <div class="panelHint" id="settingsHint">Сохрани — и нажми “Начать игру”</div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <div class="label" id="lblLang">Язык</div>
+              <select id="selLang">
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+                <option value="uz">O‘zbek (lotin)</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label" id="lblTheme">Тема</div>
+              <select id="selTheme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="label" id="lblMode">Режим</div>
+            <div class="chips" id="modeChips"></div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <div class="label" id="lblSize">Размер поля</div>
+              <select id="selSize"></select>
+            </div>
+            <div class="field">
+              <div class="label" id="lblGoal">Цель (в ряд)</div>
+              <select id="selGoal"></select>
+            </div>
+          </div>
+
+          <div class="grid2" id="aiRow">
+            <div class="field">
+              <div class="label" id="lblAI">Сложность ИИ</div>
+              <select id="selAI">
+                <option value="easy">Лёгкая</option>
+                <option value="normal">Нормальная</option>
+                <option value="hard">Сложная</option>
+                <option value="expert">Эксперт</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label">Подсказка</div>
+              <input type="text" readonly value="Для больших полей ИИ — эвристика (без лагов)" />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <div class="label" id="lblP1">Игрок 1 (X)</div>
+              <input id="inpP1" maxlength="16" placeholder="Alex" />
+            </div>
+            <div class="field">
+              <div class="label" id="lblP2">Игрок 2 (O)</div>
+              <input id="inpP2" maxlength="16" placeholder="Player 2" />
+            </div>
+          </div>
+
+          <div class="grid2" id="nameGrid34" style="display:none;">
+            <div class="field">
+              <div class="label" id="lblP3">Игрок 3 (△)</div>
+              <input id="inpP3" maxlength="16" placeholder="Player 3" />
+            </div>
+            <div class="field">
+              <div class="label" id="lblP4">Игрок 4 (□)</div>
+              <input id="inpP4" maxlength="16" placeholder="Player 4" />
+            </div>
+          </div>
+
+          <div class="saveRow">
+            <button id="btnSave" class="btn btnSave" type="button"><span id="btnSaveText">Сохранить</span></button>
+            <div class="mini" id="buildText"></div>
+          </div>
+        </div>
+
+        <div class="tabbar">
+          <button id="tabHome2" class="tab" type="button">⌂ <span id="tabHomeText2">Главная</span></button>
+          <button id="tabSettings2" class="tab tabOn" type="button">⚙ <span id="tabSettingsText2">Настройки</span></button>
+        </div>
+      </div>
+
+      <!-- GAME -->
+      <div id="screenGame" class="hidden">
+        <div class="gameWrap">
+          <div class="gameTop">
+            <div class="topRow">
+              <div>
+                <div class="turnTitle" id="turnTitle">Ходит: Alex (X)</div>
+                <div class="subLine" id="turnSub">8×8 · Цель (в ряд): 5</div>
+              </div>
+              <button class="exitBtn" id="btnExit" type="button">× Выйти</button>
+            </div>
+
+            <div class="goalRow">
+              <select id="selGoalInGame" class="goalSelect"></select>
+              <div class="statusPill" id="statusPill">● Идёт игра</div>
+            </div>
+
+            <div class="controlRow">
+              <button class="ctrlBtn" id="btnUndo" type="button">↩ Отменить</button>
+              <button class="ctrlBtn" id="btnRestart" type="button">⟲ Заново</button>
+              <button class="ctrlBtn" id="btnMenu" type="button">≡ Меню</button>
+            </div>
+          </div>
+
+          <div class="boardCard">
+            <div class="board" id="board"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <!-- SETTINGS PAGE (centered settings block only) -->
-    <div class="pageWrap hidden" id="settingsPage">
-      <div class="card">
-        <div class="cardHeader">
-          <div>
-            <h3 id="settingsTitle">Настройки</h3>
-            <div class="hint" id="settingsHint">Сохрани — и нажми “Начать игру”</div>
-          </div>
-          <div style="text-align:right">
-            <div class="hint" id="settingsMeta">—</div>
-          </div>
-        </div>
-
-        <div class="grid2">
-          <label>
-            <span id="lblLang">Язык</span>
-            <select id="selLang">
-              <option value="ru">Русский</option>
-              <option value="en">English</option>
-              <option value="uz">O‘zbek (lotin)</option>
-            </select>
-          </label>
-
-          <label>
-            <span id="lblTheme">Тема</span>
-            <select id="selTheme">
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
-          </label>
-        </div>
-
-        <div style="margin-top:14px;">
-          <div style="font-size:12px; color:var(--muted); font-weight:800" id="lblMode">Режим</div>
-          <div class="modeRow" id="modeRow"></div>
-        </div>
-
-        <div class="grid2" style="margin-top:14px;">
-          <label>
-            <span id="lblSize">Размер поля</span>
-            <select id="selSize"></select>
-          </label>
-          <label>
-            <span id="lblGoal">Цель (в ряд)</span>
-            <select id="selGoal"></select>
-          </label>
-        </div>
-
-        <div class="grid2" style="margin-top:14px;">
-          <label id="aiDiffWrap">
-            <span id="lblAi">Сложность ИИ</span>
-            <select id="selAi">
-              <option value="easy">Лёгкая</option>
-              <option value="medium">Средняя</option>
-              <option value="hard">Сложная</option>
-              <option value="expert">Эксперт</option>
-            </select>
-          </label>
-          <label>
-            <span id="lblTexture">Текстура</span>
-            <select id="selTexture">
-              <option value="grid">Grid</option>
-              <option value="paper">Paper</option>
-              <option value="noise">Noise</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="grid2" style="margin-top:14px;">
-          <label>
-            <span id="lblP1">Игрок 1 (X)</span>
-            <input id="inP1" placeholder="Alex" />
-          </label>
-          <label id="p2Wrap">
-            <span id="lblP2">Игрок 2 (O)</span>
-            <input id="inP2" placeholder="Player 2" />
-          </label>
-        </div>
-
-        <div class="grid2" style="margin-top:12px;">
-          <label class="hidden" id="p3Wrap">
-            <span id="lblP3">Игрок 3 (▲)</span>
-            <input id="inP3" placeholder="Player 3" />
-          </label>
-          <label class="hidden" id="p4Wrap">
-            <span id="lblP4">Игрок 4 (■)</span>
-            <input id="inP4" placeholder="Player 4" />
-          </label>
-        </div>
-
-        <!-- Rules moved here (per your request) -->
-        <div style="margin-top:14px; border-top:1px solid var(--line); padding-top:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-            <div style="font-weight:1000" id="rulesTitle">Правила</div>
-            <button class="miniBtn" id="toggleRules">▼</button>
-          </div>
-          <div id="rulesBox" class="hidden" style="margin-top:10px; color:var(--muted); font-weight:800; font-size:13px; line-height:1.35;">
-            <div id="rulesText"></div>
-          </div>
-        </div>
-
-        <div class="saveRow">
-          <button class="btn btnSolid saveBtn" id="saveBtn">
-            <span id="saveBtnTxt">Сохранить</span>
-          </button>
-        </div>
+  <!-- MODAL -->
+  <div class="modalBack" id="modalBack">
+    <div class="modal">
+      <div class="modalTitle" id="modalTitle">Подтвердить</div>
+      <div class="modalText" id="modalText">Текст</div>
+      <div class="modalBtns">
+        <button class="btn btnPlain" id="modalCancel" type="button">Отмена</button>
+        <button class="btn btnSave" id="modalOk" type="button">Ок</button>
       </div>
-    </div>
-
-    <!-- GAME VIEW (no green block, no bottom tabs, no rules button) -->
-    <div class="gameWrap hidden" id="gamePage">
-      <div class="gameTop">
-        <div class="gameTopHeader">
-          <div>
-            <p class="turnLine" id="turnLine">Ходит: —</p>
-            <p class="metaLine" id="metaLine">—</p>
-          </div>
-          <button class="exitBtn" id="exitBtn">✕ <span id="exitTxt">Выйти</span></button>
-        </div>
-
-        <div class="gameControls">
-          <label>
-            <span id="lblGoalInGame">Цель (в ряд)</span>
-            <select id="selGoalInGame"></select>
-          </label>
-
-          <div class="miniBtns">
-            <button class="miniBtn" id="undoBtn">↩ <span id="undoTxt">Отменить</span></button>
-            <button class="miniBtn" id="restartBtn">⟲ <span id="restartTxt">Рестарт</span></button>
-            <button class="miniBtn" id="menuBtn">☰ <span id="menuTxt">Меню</span></button>
-          </div>
-
-          <button class="miniBtn" id="randomMapBtn">🗺 <span id="mapTxt">Случ. карта</span></button>
-        </div>
-      </div>
-
-      <div class="boardCard">
-        <div class="boardBg" id="boardBg">
-          <div class="grid" id="grid"></div>
-        </div>
-      </div>
-
-      <div class="toast hidden" id="toast"></div>
-    </div>
-
-    <!-- Bottom nav (only Home / Settings, hidden in Game) -->
-    <div class="bottomNav" id="bottomNav">
-      <button class="tab active" id="tabHome">⌂ <span id="tabHomeTxt">Главная</span></button>
-      <button class="tab" id="tabSettings">⚙ <span id="tabSettingsTxt">Настройки</span></button>
     </div>
   </div>
 
 <script>
-(() => {
-  /* =======================
-     VERSION (cache-bust)
-  ======================== */
-  const APP_VERSION = "2025.12.22.2"; // <-- when you update code, bump this
-  const BUILD_STAMP = new Date().toISOString().slice(0,19).replace("T"," ");
-  document.getElementById("appVer").textContent = "v" + APP_VERSION;
-  document.getElementById("miniBuild").textContent = "build " + APP_VERSION;
+  const BUILD = "2025.12.22.4"; // <- меняй число при каждом апдейте (для Telegram)
 
-  // Telegram WebView cache-bust trick:
-  // If URL doesn't have ?v=APP_VERSION, auto-add it and reload once.
-  try{
-    const url = new URL(location.href);
-    if (url.searchParams.get("v") !== APP_VERSION){
-      url.searchParams.set("v", APP_VERSION);
-      history.replaceState(null, "", url.toString());
-      // Force reload only once per version
-      const k = "tt_force_reload_" + APP_VERSION;
-      if (!localStorage.getItem(k)){
-        localStorage.setItem(k, "1");
-        location.reload();
+  // принудительный query v=BUILD (чтобы обновления чаще подтягивались)
+  (function(){
+    try{
+      const u = new URL(location.href);
+      const v = u.searchParams.get("v");
+      if(v !== BUILD){
+        if(sessionStorage.getItem("forcedV") !== BUILD){
+          sessionStorage.setItem("forcedV", BUILD);
+          u.searchParams.set("v", BUILD);
+          location.replace(u.toString());
+        }
       }
-    }
-  }catch(e){}
-
-  /* =======================
-     Helpers / state
-  ======================== */
-  const $ = (id) => document.getElementById(id);
-
-  const DEFAULT = {
-    lang: "ru",
-    theme: "light",
-    texture: "grid",
-    mode: "pvp", // pvp | ai | p3 | p4
-    size: 8,
-    goal: 5,
-    ai: "expert",
-    names: ["Alex", "Player 2", "Player 3", "Player 4"],
-    inGame: false,
-    board: [],
-    turn: 0, // index of current player
-    history: [],
-    savedAt: null,
-    mapSeed: 1
-  };
-
-  let S = loadState();
-
-  function loadState(){
-    try{
-      const raw = localStorage.getItem("ttplus_state_v2");
-      if (!raw) return structuredClone(DEFAULT);
-      const o = JSON.parse(raw);
-      // merge defaults
-      const s = structuredClone(DEFAULT);
-      Object.assign(s, o);
-      // safety clamps
-      s.size = clampInt(s.size, 3, 10);
-      s.goal = clampInt(s.goal, 3, s.size);
-      s.mapSeed = clampInt(s.mapSeed || 1, 1, 999999);
-      if (!Array.isArray(s.names)) s.names = structuredClone(DEFAULT.names);
-      return s;
-    }catch(e){
-      return structuredClone(DEFAULT);
-    }
-  }
-
-  function saveState(){
-    try{
-      localStorage.setItem("ttplus_state_v2", JSON.stringify(S));
     }catch(e){}
-    updateContinue();
-  }
+  })();
 
-  function clampInt(n, a, b){
-    n = parseInt(n,10);
-    if (Number.isNaN(n)) n = a;
-    return Math.max(a, Math.min(b, n));
-  }
-
-  /* =======================
-     I18N
-  ======================== */
   const I18N = {
-    ru:{
-      home:"Главная",
-      settings:"Настройки",
-      start:"Начать игру",
-      continue:"Продолжить",
-      noSaved:"Нет сохранения",
-      save:"Сохранить",
-      lang:"Язык",
-      theme:"Тема",
-      mode:"Режим",
-      size:"Размер поля",
-      goal:"Цель (в ряд)",
-      ai:"Сложность ИИ",
-      texture:"Текстура",
-      p1:"Игрок 1 (X)",
-      p2:"Игрок 2 (O)",
-      p3:"Игрок 3 (▲)",
-      p4:"Игрок 4 (■)",
-      exit:"Выйти",
-      turn:"Ходит",
-      undo:"Отменить",
-      restart:"Рестарт",
-      menu:"Меню",
-      map:"Случ. карта",
-      rules:"Правила",
-      rulesTxt:
-        "Выбирай режим, размер поля и цель (сколько символов подряд нужно собрать). " +
-        "В игре можно менять цель (в ряд) прямо во время матча. " +
-        "Победа: собери свою цель подряд по горизонтали, вертикали или диагонали. " +
-        "Ничья: если ходов нет и победителя нет.",
-      mode_pvp:"Игрок vs Игрок",
-      mode_ai:"Игрок vs ИИ",
-      mode_p3:"3 игрока",
-      mode_p4:"4 игрока",
-      ai_easy:"Лёгкая",
-      ai_medium:"Средняя",
-      ai_hard:"Сложная",
-      ai_expert:"Эксперт",
-      light:"Light",
-      dark:"Dark",
-      tex_grid:"Grid",
-      tex_paper:"Paper",
-      tex_noise:"Noise",
-      winner:"Победитель",
-      draw:"Ничья",
-      saved:"Сохранено",
-      notSaved:"Сохранённой игры нет",
-      started:"Игра начата",
-      resumed:"Игра продолжена",
-      finished:"Игра завершена",
-      closeRules:"Скрыть",
-      openRules:"Показать",
-      settingsHint:"Сохрани — и нажми “Начать игру”"
+    ru: {
+      home:"Главная", settings:"Настройки", start:"Начать игру", save:"Сохранить",
+      hint:"Сохрани — и нажми “Начать игру”",
+      lang:"Язык", theme:"Тема", mode:"Режим", size:"Размер поля", goal:"Цель (в ряд)", ai:"Сложность ИИ",
+      p1:"Игрок 1 (X)", p2:"Игрок 2 (O)", p3:"Игрок 3 (△)", p4:"Игрок 4 (□)",
+      modePVP:"Игрок vs Игрок", modeAI:"Игрок vs ИИ", mode3:"3 игрока", mode4:"4 игрока",
+      exit:"× Выйти", undo:"↩ Отменить", restart:"⟲ Заново", menu:"≡ Меню",
+      turn:(n,s)=>`Ходит: ${n} (${s})`,
+      sub:(sz,g)=>`${sz}×${sz} · Цель (в ряд): ${g}`,
+      play:"● Идёт игра", win:"★ Победа", draw:"■ Ничья",
+      confirmNew:"Это начнёт новую игру. Продолжить?",
+      confirmExit:"Выйти в меню? Партия будет потеряна.",
+      confirmGoal:"Менять цель во время партии нельзя без перезапуска. Начать новую игру с новой целью?",
+      ok:"Ок", cancel:"Отмена",
+      goalShort:"Цель:"
     },
-    en:{
-      home:"Home",
-      settings:"Settings",
-      start:"Start game",
-      continue:"Continue",
-      noSaved:"No saved game",
-      save:"Save",
-      lang:"Language",
-      theme:"Theme",
-      mode:"Mode",
-      size:"Board size",
-      goal:"Goal (in a row)",
-      ai:"AI difficulty",
-      texture:"Texture",
-      p1:"Player 1 (X)",
-      p2:"Player 2 (O)",
-      p3:"Player 3 (▲)",
-      p4:"Player 4 (■)",
-      exit:"Exit",
-      turn:"Turn",
-      undo:"Undo",
-      restart:"Restart",
-      menu:"Menu",
-      map:"Random map",
-      rules:"Rules",
-      rulesTxt:
-        "Choose mode, board size and goal (how many in a row). " +
-        "You can change the goal during the game. " +
-        "Win: reach your goal in a row horizontally, vertically or diagonally. " +
-        "Draw: no moves left and no winner.",
-      mode_pvp:"Player vs Player",
-      mode_ai:"Player vs AI",
-      mode_p3:"3 players",
-      mode_p4:"4 players",
-      ai_easy:"Easy",
-      ai_medium:"Medium",
-      ai_hard:"Hard",
-      ai_expert:"Expert",
-      light:"Light",
-      dark:"Dark",
-      tex_grid:"Grid",
-      tex_paper:"Paper",
-      tex_noise:"Noise",
-      winner:"Winner",
-      draw:"Draw",
-      saved:"Saved",
-      notSaved:"No saved game",
-      started:"Game started",
-      resumed:"Game resumed",
-      finished:"Game finished",
-      closeRules:"Hide",
-      openRules:"Show",
-      settingsHint:"Save — then tap “Start game”"
+    en: {
+      home:"Home", settings:"Settings", start:"Start game", save:"Save",
+      hint:"Save — then press “Start game”",
+      lang:"Language", theme:"Theme", mode:"Mode", size:"Board size", goal:"Goal (in a row)", ai:"AI difficulty",
+      p1:"Player 1 (X)", p2:"Player 2 (O)", p3:"Player 3 (△)", p4:"Player 4 (□)",
+      modePVP:"Player vs Player", modeAI:"Player vs AI", mode3:"3 players", mode4:"4 players",
+      exit:"× Exit", undo:"↩ Undo", restart:"⟲ Restart", menu:"≡ Menu",
+      turn:(n,s)=>`Turn: ${n} (${s})`,
+      sub:(sz,g)=>`${sz}×${sz} · Goal: ${g}`,
+      play:"● Playing", win:"★ Win", draw:"■ Draw",
+      confirmNew:"This will start a new game. Continue?",
+      confirmExit:"Exit to menu? Current match will be lost.",
+      confirmGoal:"Changing goal requires restart. Start a new game with the new goal?",
+      ok:"OK", cancel:"Cancel",
+      goalShort:"Goal:"
     },
-    uz:{
-      home:"Bosh sahifa",
-      settings:"Sozlamalar",
-      start:"O‘yinni boshlash",
-      continue:"Davom ettirish",
-      noSaved:"Saqlangan o‘yin yo‘q",
-      save:"Saqlash",
-      lang:"Til",
-      theme:"Mavzu",
-      mode:"Rejim",
-      size:"Maydon o‘lchami",
-      goal:"Maqsad (qator)",
-      ai:"AI qiyinligi",
-      texture:"Tekstura",
-      p1:"1-o‘yinchi (X)",
-      p2:"2-o‘yinchi (O)",
-      p3:"3-o‘yinchi (▲)",
-      p4:"4-o‘yinchi (■)",
-      exit:"Chiqish",
-      turn:"Navbat",
-      undo:"Bekor qilish",
-      restart:"Qayta boshlash",
-      menu:"Menyu",
-      map:"Tasodifiy xarita",
-      rules:"Qoidalar",
-      rulesTxt:
-        "Rejim, maydon va maqsadni tanlang (qator bo‘ylab nechta). " +
-        "O‘yin davomida maqsadni o‘zgartirish mumkin. " +
-        "G‘alaba: gorizontal/vertikal/diagonal bo‘yicha maqsadga yeting. " +
-        "Durang: yurish qolmasa va g‘olib bo‘lmasa.",
-      mode_pvp:"O‘yinchi vs O‘yinchi",
-      mode_ai:"O‘yinchi vs AI",
-      mode_p3:"3 o‘yinchi",
-      mode_p4:"4 o‘yinchi",
-      ai_easy:"Oson",
-      ai_medium:"O‘rtacha",
-      ai_hard:"Qiyin",
-      ai_expert:"Ekspert",
-      light:"Light",
-      dark:"Dark",
-      tex_grid:"Grid",
-      tex_paper:"Paper",
-      tex_noise:"Noise",
-      winner:"G‘olib",
-      draw:"Durang",
-      saved:"Saqlangan",
-      notSaved:"Saqlangan o‘yin yo‘q",
-      started:"O‘yin boshlandi",
-      resumed:"O‘yin davom etdi",
-      finished:"O‘yin tugadi",
-      closeRules:"Yopish",
-      openRules:"Ko‘rsatish",
-      settingsHint:"Saqlang — so‘ng “O‘yinni boshlash”ni bosing"
+    uz: {
+      home:"Bosh sahifa", settings:"Sozlamalar", start:"O‘yinni boshlash", save:"Saqlash",
+      hint:"Saqlang — so‘ng “O‘yinni boshlash” ni bosing",
+      lang:"Til", theme:"Mavzu", mode:"Rejim", size:"Maydon o‘lchami", goal:"Maqsad (qator bo‘ylab)", ai:"AI qiyinligi",
+      p1:"1-o‘yinchi (X)", p2:"2-o‘yinchi (O)", p3:"3-o‘yinchi (△)", p4:"4-o‘yinchi (□)",
+      modePVP:"O‘yinchi vs O‘yinchi", modeAI:"O‘yinchi vs AI", mode3:"3 o‘yinchi", mode4:"4 o‘yinchi",
+      exit:"× Chiqish", undo:"↩ Bekor qilish", restart:"⟲ Qayta", menu:"≡ Menyu",
+      turn:(n,s)=>`Navbat: ${n} (${s})`,
+      sub:(sz,g)=>`${sz}×${sz} · Maqsad: ${g}`,
+      play:"● O‘yin ketmoqda", win:"★ G‘alaba", draw:"■ Durang",
+      confirmNew:"Bu yangi o‘yinni boshlaydi. Davom etamizmi?",
+      confirmExit:"Menyuga chiqilsinmi? Joriy o‘yin yo‘qoladi.",
+      confirmGoal:"Maqsadni o‘zgartirish uchun qayta boshlash kerak. Yangi maqsad bilan yangi o‘yin boshlandi.",
+      ok:"OK", cancel:"Bekor",
+      goalShort:"Maqsad:"
     }
   };
 
-  function t(key){
-    return (I18N[S.lang] && I18N[S.lang][key]) || I18N.ru[key] || key;
-  }
+  const MODES = [
+    {id:"pvp", key:"modePVP", players:2, ai:false},
+    {id:"ai",  key:"modeAI",  players:2, ai:true},
+    {id:"p3",  key:"mode3",   players:3, ai:false},
+    {id:"p4",  key:"mode4",   players:4, ai:false}
+  ];
+  const SYMBOLS = ["X","O","△","□"];
 
-  /* =======================
-     Theme + texture
-  ======================== */
-  const app = $("app");
-  function applyTheme(){
-    app.setAttribute("data-theme", S.theme);
-    document.body.setAttribute("data-theme", S.theme);
-    document.documentElement.setAttribute("data-theme", S.theme);
-    $("selTheme").value = S.theme;
-  }
+  const storeKey = "ttt_settings_v4";
+  const gameKey  = "ttt_game_v4";
 
-  function applyTexture(){
-    // we change body::after effect via CSS variables
-    if (S.texture === "grid"){
-      document.documentElement.style.setProperty("--textureOpacity", (S.theme==="dark") ? ".10" : ".08");
-      document.body.style.filter = "";
-    }else if (S.texture === "paper"){
-      document.documentElement.style.setProperty("--textureOpacity", (S.theme==="dark") ? ".12" : ".10");
-      document.body.style.filter = "saturate(.98)";
-    }else{ // noise
-      document.documentElement.style.setProperty("--textureOpacity", (S.theme==="dark") ? ".16" : ".14");
-      document.body.style.filter = "contrast(1.02)";
-    }
-    $("selTexture").value = S.texture;
+  const $ = id => document.getElementById(id);
 
-    // tweak body::after by toggling classes? keep simple: we vary blend mode via inline style
-    // (not necessary—opacity already changes)
-  }
+  const screenHome = $("screenHome");
+  const screenSettings = $("screenSettings");
+  const screenGame = $("screenGame");
 
-  /* =======================
-     Pages
-  ======================== */
-  const homePage = $("homePage");
-  const settingsPage = $("settingsPage");
-  const gamePage = $("gamePage");
-  const bottomNav = $("bottomNav");
+  const homeKicker = $("homeKicker");
+  const homeMeta = $("homeMeta");
+  const btnStart = $("btnStart");
+  const btnStartText = $("btnStartText");
+
   const tabHome = $("tabHome");
   const tabSettings = $("tabSettings");
+  const tabHome2 = $("tabHome2");
+  const tabSettings2 = $("tabSettings2");
+  const tabHomeText = $("tabHomeText");
+  const tabSettingsText = $("tabSettingsText");
+  const tabHomeText2 = $("tabHomeText2");
+  const tabSettingsText2 = $("tabSettingsText2");
 
-  function showPage(page){
-    homePage.classList.toggle("hidden", page!=="home");
-    settingsPage.classList.toggle("hidden", page!=="settings");
-    gamePage.classList.toggle("hidden", page!=="game");
+  const settingsTitle = $("settingsTitle");
+  const settingsHint = $("settingsHint");
+  const lblLang = $("lblLang");
+  const lblTheme = $("lblTheme");
+  const lblMode = $("lblMode");
+  const lblSize = $("lblSize");
+  const lblGoal = $("lblGoal");
+  const lblAI = $("lblAI");
+  const lblP1 = $("lblP1");
+  const lblP2 = $("lblP2");
+  const lblP3 = $("lblP3");
+  const lblP4 = $("lblP4");
 
-    bottomNav.classList.toggle("hidden", page==="game");
+  const selLang = $("selLang");
+  const selTheme = $("selTheme");
+  const modeChips = $("modeChips");
+  const selSize = $("selSize");
+  const selGoal = $("selGoal");
+  const aiRow = $("aiRow");
+  const selAI = $("selAI");
+  const inpP1 = $("inpP1");
+  const inpP2 = $("inpP2");
+  const inpP3 = $("inpP3");
+  const inpP4 = $("inpP4");
+  const nameGrid34 = $("nameGrid34");
 
-    tabHome.classList.toggle("active", page==="home");
-    tabSettings.classList.toggle("active", page==="settings");
-  }
+  const btnSave = $("btnSave");
+  const btnSaveText = $("btnSaveText");
+  const buildText = $("buildText");
 
-  tabHome.onclick = () => showPage("home");
-  tabSettings.onclick = () => showPage("settings");
+  const turnTitle = $("turnTitle");
+  const turnSub = $("turnSub");
+  const btnExit = $("btnExit");
+  const selGoalInGame = $("selGoalInGame");
+  const statusPill = $("statusPill");
+  const btnUndo = $("btnUndo");
+  const btnRestart = $("btnRestart");
+  const btnMenu = $("btnMenu");
+  const boardEl = $("board");
 
-  /* =======================
-     Settings UI build
-  ======================== */
-  const modeRow = $("modeRow");
+  const modalBack = $("modalBack");
+  const modalTitle = $("modalTitle");
+  const modalText = $("modalText");
+  const modalCancel = $("modalCancel");
+  const modalOk = $("modalOk");
+  let modalResolve = null;
 
-  function buildModes(){
-    modeRow.innerHTML = "";
-    const modes = [
-      ["pvp","mode_pvp"],
-      ["ai","mode_ai"],
-      ["p3","mode_p3"],
-      ["p4","mode_p4"]
-    ];
-    for (const [val,key] of modes){
-      const b = document.createElement("button");
-      b.className = "pill" + (S.mode===val ? " active" : "");
-      b.type = "button";
-      b.textContent = t(key);
-      b.onclick = () => {
-        S.mode = val;
-        if (S.mode === "ai") S.names[1] = botName();
-        syncPlayerInputs();
-        buildModes();
-        refreshSettingsMeta();
-        saveState();
-      };
-      modeRow.appendChild(b);
-    }
-  }
+  let settings = loadSettings();
+  let board = [];
+  let history = [];
+  let lastMoveIdx = null;
+  let winLine = [];
+  let gameOver = false;
 
-  function buildSizes(){
-    const sel = $("selSize");
-    sel.innerHTML = "";
-    for (let n=3;n<=10;n++){
-      const opt = document.createElement("option");
-      opt.value = String(n);
-      opt.textContent = `${n}×${n}`;
-      sel.appendChild(opt);
-    }
-    sel.value = String(S.size);
-    sel.onchange = () => {
-      S.size = clampInt(sel.value, 3, 10);
-      // adjust goal range
-      S.goal = clampInt(S.goal, 3, S.size);
-      buildGoals();
-      refreshSettingsMeta();
-      saveState();
-    };
-  }
-
-  function buildGoals(){
-    const sel = $("selGoal");
-    sel.innerHTML = "";
-    for (let g=3; g<=S.size; g++){
-      const opt = document.createElement("option");
-      opt.value = String(g);
-      opt.textContent = String(g);
-      sel.appendChild(opt);
-    }
-    sel.value = String(S.goal);
-    sel.onchange = () => {
-      S.goal = clampInt(sel.value, 3, S.size);
-      refreshSettingsMeta();
-      saveState();
-    };
-
-    // also game dropdown (if already exists)
-    buildGoalsInGame();
-  }
-
-  function buildGoalsInGame(){
-    const sel = $("selGoalInGame");
-    sel.innerHTML = "";
-    for (let g=3; g<=S.size; g++){
-      const opt = document.createElement("option");
-      opt.value = String(g);
-      opt.textContent = `${t("goal")}: ${g}`;
-      sel.appendChild(opt);
-    }
-    sel.value = String(S.goal);
-    sel.onchange = () => {
-      S.goal = clampInt(sel.value, 3, S.size);
-      // check if someone already won with new goal (optional) -> we'll just continue safely
-      renderGameTop();
-      saveState();
-    };
-  }
-
-  function syncPlayerInputs(){
-    $("inP1").value = S.names[0] || "Alex";
-    $("inP2").value = S.names[1] || "Player 2";
-    $("inP3").value = S.names[2] || "Player 3";
-    $("inP4").value = S.names[3] || "Player 4";
-
-    // show/hide inputs based on mode
-    const p2Wrap = $("p2Wrap");
-    const p3Wrap = $("p3Wrap");
-    const p4Wrap = $("p4Wrap");
-    const aiDiffWrap = $("aiDiffWrap");
-
-    p2Wrap.classList.toggle("hidden", false);
-    p3Wrap.classList.toggle("hidden", !(S.mode==="p3" || S.mode==="p4"));
-    p4Wrap.classList.toggle("hidden", !(S.mode==="p4"));
-    aiDiffWrap.classList.toggle("hidden", S.mode!=="ai");
-
-    // if ai mode, lock p2 name to bot
-    if (S.mode === "ai"){
-      $("inP2").value = botName();
-      $("inP2").setAttribute("disabled","disabled");
-    }else{
-      $("inP2").removeAttribute("disabled");
-    }
-  }
-
-  function botName(){
-    if (S.lang==="ru") return "Бот";
-    if (S.lang==="uz") return "Bot";
-    return "Bot";
-  }
-
-  $("selLang").onchange = () => {
-    S.lang = $("selLang").value;
-    if (S.mode === "ai") S.names[1] = botName();
-    applyI18n();
-    buildModes();
-    syncPlayerInputs();
-    refreshSettingsMeta();
-    renderHomeSummary();
-    renderGameTop();
-    saveState();
-  };
-
-  $("selTheme").onchange = () => {
-    S.theme = $("selTheme").value;
-    applyTheme();
-    applyTexture();
-    saveState();
-  };
-
-  $("selAi").onchange = () => { S.ai = $("selAi").value; refreshSettingsMeta(); saveState(); };
-  $("selTexture").onchange = () => { S.texture = $("selTexture").value; applyTexture(); saveState(); };
-
-  $("inP1").oninput = () => { S.names[0] = $("inP1").value.trim() || "Alex"; renderHomeSummary(); saveState(); };
-  $("inP2").oninput = () => { if (S.mode!=="ai") { S.names[1] = $("inP2").value.trim() || "Player 2"; renderHomeSummary(); saveState(); } };
-  $("inP3").oninput = () => { S.names[2] = $("inP3").value.trim() || "Player 3"; renderHomeSummary(); saveState(); };
-  $("inP4").oninput = () => { S.names[3] = $("inP4").value.trim() || "Player 4"; renderHomeSummary(); saveState(); };
-
-  function refreshSettingsMeta(){
-    $("settingsMeta").textContent = `${S.size}×${S.size} · ${t("goal")}: ${S.goal}`;
-  }
-
-  /* =======================
-     Rules toggle
-  ======================== */
-  $("toggleRules").onclick = () => {
-    const box = $("rulesBox");
-    const open = box.classList.toggle("hidden");
-    // open==true means hidden; so reversed
-    $("toggleRules").textContent = box.classList.contains("hidden") ? "▼" : "▲";
-  };
-
-  /* =======================
-     Home summary
-  ======================== */
-  function modeLabel(){
-    if (S.mode==="pvp") return t("mode_pvp");
-    if (S.mode==="ai") return t("mode_ai");
-    if (S.mode==="p3") return t("mode_p3");
-    return t("mode_p4");
-  }
-
-  function playersLine(){
-    const marks = ["X","O","▲","■"];
-    const pCount = (S.mode==="p3") ? 3 : (S.mode==="p4") ? 4 : 2;
-    const names = S.names.slice(0,pCount).map((n,i)=>`${n || ("P"+(i+1))} (${marks[i]})`);
-    return names.join(", ");
-  }
-
-  function renderHomeSummary(){
-    // keep minimal text (you asked less info per block)
-    $("homeLabel").textContent = t("home");
-    $("homeTitle").textContent = "Tic-Tac-Toe+";
-    $("homeSub").textContent =
-      `${modeLabel()} · ${S.size}×${S.size} · ${t("goal")}: ${S.goal}\n` +
-      `${playersLine()}`;
-    $("startBtnTxt").textContent = t("start");
-    $("continueBtnTxt").textContent = t("continue");
-  }
-
-  function applyI18n(){
-    $("tabHomeTxt").textContent = t("home");
-    $("tabSettingsTxt").textContent = t("settings");
-
-    $("settingsTitle").textContent = t("settings");
-    $("settingsHint").textContent = t("settingsHint");
-
-    $("lblLang").textContent = t("lang");
-    $("lblTheme").textContent = t("theme");
-    $("lblMode").textContent = t("mode");
-    $("lblSize").textContent = t("size");
-    $("lblGoal").textContent = t("goal");
-    $("lblAi").textContent = t("ai");
-    $("lblTexture").textContent = t("texture");
-    $("lblP1").textContent = t("p1");
-    $("lblP2").textContent = t("p2");
-    $("lblP3").textContent = t("p3");
-    $("lblP4").textContent = t("p4");
-    $("saveBtnTxt").textContent = t("save");
-
-    $("rulesTitle").textContent = t("rules");
-    $("rulesText").textContent = t("rulesTxt");
-
-    $("exitTxt").textContent = t("exit");
-    $("undoTxt").textContent = t("undo");
-    $("restartTxt").textContent = t("restart");
-    $("menuTxt").textContent = t("menu");
-    $("mapTxt").textContent = t("map");
-    $("lblGoalInGame").textContent = t("goal");
-
-    // select labels (theme/texture show as-is)
-    const selTheme = $("selTheme");
-    selTheme.options[0].textContent = t("light");
-    selTheme.options[1].textContent = t("dark");
-
-    const selTex = $("selTexture");
-    selTex.options[0].textContent = t("tex_grid");
-    selTex.options[1].textContent = t("tex_paper");
-    selTex.options[2].textContent = t("tex_noise");
-
-    const selAi = $("selAi");
-    selAi.options[0].textContent = t("ai_easy");
-    selAi.options[1].textContent = t("ai_medium");
-    selAi.options[2].textContent = t("ai_hard");
-    selAi.options[3].textContent = t("ai_expert");
-
-    $("selLang").value = S.lang;
-  }
-
-  /* =======================
-     Start / continue / save
-  ======================== */
-  function updateContinue(){
-    const hasSaved = !!(S.inGame && S.board && S.board.length);
-    $("continueBtn").disabled = !hasSaved;
-    $("continueBtnTxt").textContent = hasSaved ? t("continue") : t("noSaved");
-  }
-
-  $("saveBtn").onclick = () => {
-    // Also normalize goal options
-    S.size = clampInt($("selSize").value, 3, 10);
-    S.goal = clampInt($("selGoal").value, 3, S.size);
-    S.lang = $("selLang").value;
-    S.theme = $("selTheme").value;
-    S.ai = $("selAi").value;
-    S.texture = $("selTexture").value;
-
-    S.names[0] = $("inP1").value.trim() || "Alex";
-    if (S.mode !== "ai") S.names[1] = $("inP2").value.trim() || "Player 2";
-    else S.names[1] = botName();
-    S.names[2] = $("inP3").value.trim() || "Player 3";
-    S.names[3] = $("inP4").value.trim() || "Player 4";
-
-    S.savedAt = Date.now();
-
-    applyTheme();
-    applyTexture();
-    applyI18n();
-    buildModes();
-    syncPlayerInputs();
-    buildGoals();
-    refreshSettingsMeta();
-    renderHomeSummary();
-
-    toast(t("saved"));
-    saveState();
-  };
-
-  $("startBtn").onclick = () => {
-    startNewGame();
-  };
-
-  $("continueBtn").onclick = () => {
-    if (S.inGame && S.board && S.board.length){
-      showGame();
-      toast(t("resumed"));
-      maybeAIMove();
-    }else{
-      toast(t("notSaved"));
-    }
-  };
-
-  /* =======================
-     Game logic
-  ======================== */
-  const grid = $("grid");
-  const toastEl = $("toast");
-
-  const MARKS = ["X","O","▲","■"];
-  const CLASSES = ["markX","markO","markA","markB"];
-
-  function startNewGame(){
-    S.size = clampInt(S.size, 3, 10);
-    S.goal = clampInt(S.goal, 3, S.size);
-
-    const cells = S.size * S.size;
-    S.board = new Array(cells).fill(-1);
-    S.turn = 0;
-    S.history = [];
-    S.inGame = true;
-    S.mapSeed = (S.mapSeed || 1) + 1;
-
-    // If AI mode, ensure bot name
-    if (S.mode === "ai") S.names[1] = botName();
-
-    saveState();
-    showGame();
-    toast(t("started"));
-    maybeAIMove();
-  }
-
-  function showGame(){
-    showPage("game");
-    renderGameTop();
-    renderGrid();
-    applyMapSeed();
-  }
-
-  function backToMenu(){
-    // keep inGame state as "saved" so continue works
-    showPage("home");
-    renderHomeSummary();
-    updateContinue();
-  }
-
-  $("menuBtn").onclick = backToMenu;
-  $("exitBtn").onclick = () => {
-    // exit ends the game (no need to keep green block etc)
-    S.inGame = false;
-    S.board = [];
-    S.history = [];
-    saveState();
-    showPage("home");
-    renderHomeSummary();
-    updateContinue();
-    toast(t("finished"));
-  };
-
-  $("restartBtn").onclick = () => startNewGame();
-
-  $("undoBtn").onclick = () => {
-    undoMove();
-  };
-
-  $("randomMapBtn").onclick = () => {
-    S.mapSeed = (S.mapSeed || 1) + 1;
-    applyMapSeed();
-    saveState();
-  };
-
-  function renderGameTop(){
-    if (!S.inGame) return;
-    const pCount = (S.mode==="p3") ? 3 : (S.mode==="p4") ? 4 : 2;
-    const who = currentPlayerName();
-    $("turnLine").textContent = `${t("turn")}: ${who} (${MARKS[S.turn]})`;
-
-    $("metaLine").textContent = `${S.size}×${S.size} · ${t("goal")}: ${S.goal}`;
-
-    buildGoalsInGame();
-
-    // Undo only if history exists
-    $("undoBtn").disabled = !S.history.length;
-  }
-
-  function currentPlayerName(){
-    return (S.names[S.turn] || ("P"+(S.turn+1)));
-  }
-
-  function renderGrid(){
-    grid.innerHTML = "";
-    grid.style.gridTemplateColumns = `repeat(${S.size}, var(--cellSize))`;
-    const total = S.size * S.size;
-
-    for (let i=0;i<total;i++){
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      cell.dataset.i = String(i);
-
-      const v = S.board[i];
-      if (v >= 0){
-        cell.textContent = MARKS[v];
-        cell.classList.add(CLASSES[v]);
-        cell.classList.add("disabled");
-      }else{
-        cell.textContent = "";
+  function loadSettings(){
+    try{
+      const raw = localStorage.getItem(storeKey);
+      if(raw){
+        const s = JSON.parse(raw);
+        return {
+          lang: s.lang || "ru",
+          theme: s.theme || "light",
+          mode: s.mode || "pvp",
+          size: clamp(s.size,3,10,8),
+          goal: clamp(s.goal,3,10,5),
+          ai: s.ai || "expert",
+          p1: s.p1 || "Alex",
+          p2: s.p2 || "Player 2",
+          p3: s.p3 || "Player 3",
+          p4: s.p4 || "Player 4"
+        };
       }
+    }catch(e){}
+    return {lang:"ru",theme:"light",mode:"pvp",size:8,goal:5,ai:"expert",p1:"Alex",p2:"Player 2",p3:"Player 3",p4:"Player 4"};
+  }
+  function saveSettings(){ localStorage.setItem(storeKey, JSON.stringify(settings)); }
 
-      cell.onclick = () => {
-        if (!S.inGame) return;
-        if (S.board[i] !== -1) return;
-        if (isAITurn()) return; // block clicking while AI should move
-        doMove(i, S.turn);
-      };
+  function applyTheme(){
+    document.documentElement.setAttribute("data-theme", settings.theme);
+  }
 
-      grid.appendChild(cell);
+  function getMode(){ return MODES.find(m=>m.id===settings.mode) || MODES[0]; }
+  function playerName(i){
+    if(i===0) return settings.p1 || "Player 1";
+    if(i===1) return settings.mode==="ai" ? (settings.p2 || "Bot") : (settings.p2 || "Player 2");
+    if(i===2) return settings.p3 || "Player 3";
+    return settings.p4 || "Player 4";
+  }
+  function safeName(s){ return (s||"").trim().slice(0,16) || "Player"; }
+
+  function clamp(v,min,max,fallback){
+    const n = parseInt(v,10);
+    if(Number.isFinite(n)) return Math.max(min, Math.min(max, n));
+    return fallback;
+  }
+
+  function go(screen){
+    screenHome.classList.toggle("hidden", screen!=="home");
+    screenSettings.classList.toggle("hidden", screen!=="settings");
+    screenGame.classList.toggle("hidden", screen!=="game");
+  }
+
+  function renderAllTexts(){
+    const t = I18N[settings.lang];
+
+    homeKicker.textContent = t.home;
+    btnStartText.textContent = t.start;
+
+    tabHomeText.textContent = t.home;
+    tabSettingsText.textContent = t.settings;
+    tabHomeText2.textContent = t.home;
+    tabSettingsText2.textContent = t.settings;
+
+    settingsTitle.textContent = t.settings;
+    settingsHint.textContent = t.hint;
+    lblLang.textContent = t.lang;
+    lblTheme.textContent = t.theme;
+    lblMode.textContent = t.mode;
+    lblSize.textContent = t.size;
+    lblGoal.textContent = t.goal;
+    lblAI.textContent = t.ai;
+    lblP1.textContent = t.p1;
+    lblP2.textContent = t.p2;
+    lblP3.textContent = t.p3;
+    lblP4.textContent = t.p4;
+
+    btnSaveText.textContent = t.save;
+    buildText.textContent = `build ${BUILD}`;
+
+    btnExit.textContent = t.exit;
+    btnUndo.textContent = t.undo;
+    btnRestart.textContent = t.restart;
+    btnMenu.textContent = t.menu;
+
+    renderHomeMeta();
+    renderGameHeader();
+    rebuildGoalInGameOptions();
+  }
+
+  function renderHomeMeta(){
+    const t = I18N[settings.lang];
+    const modeName = t[getMode().key];
+    const names = (() => {
+      const m = getMode();
+      const arr = [];
+      arr.push(`${safeName(playerName(0))} (${SYMBOLS[0]})`);
+      arr.push(`${safeName(playerName(1))} (${SYMBOLS[1]})`);
+      if(m.players>=3) arr.push(`${safeName(playerName(2))} (${SYMBOLS[2]})`);
+      if(m.players>=4) arr.push(`${safeName(playerName(3))} (${SYMBOLS[3]})`);
+      return arr.join(", ");
+    })();
+    homeMeta.textContent = `${modeName} · ${settings.size}×${settings.size} · ${t.goal}: ${settings.goal} ${names}`;
+  }
+
+  function applySettingsToForm(){
+    selLang.value = settings.lang;
+    selTheme.value = settings.theme;
+    selAI.value = settings.ai;
+
+    // sizes 3..10
+    selSize.innerHTML = "";
+    for(let s=3; s<=10; s++){
+      const o = document.createElement("option");
+      o.value = String(s);
+      o.textContent = `${s}×${s}`;
+      selSize.appendChild(o);
     }
-  }
+    selSize.value = String(settings.size);
 
-  function isAITurn(){
-    return S.mode==="ai" && S.turn===1;
-  }
-
-  function doMove(index, player){
-    if (S.board[index] !== -1) return;
-
-    // push snapshot for undo
-    S.history.push({
-      index,
-      prev: -1,
-      turnBefore: player,
-      goalBefore: S.goal
+    // mode chips
+    modeChips.innerHTML = "";
+    const t = I18N[settings.lang];
+    MODES.forEach(m=>{
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip" + (m.id===settings.mode ? " chipOn":"");
+      chip.textContent = t[m.key];
+      chip.addEventListener("click", ()=>{
+        settings.mode = m.id;
+        // bot name default
+        if(settings.mode==="ai" && (!inpP2.value.trim())) inpP2.value = "Bot";
+        saveSettings();
+        applySettingsToForm();
+        renderAllTexts();
+      });
+      modeChips.appendChild(chip);
     });
 
-    S.board[index] = player;
-
-    // render only that cell
-    const cell = grid.querySelector(`.cell[data-i="${index}"]`);
-    if (cell){
-      cell.textContent = MARKS[player];
-      cell.classList.add(CLASSES[player], "disabled");
+    // goal options 3..size
+    settings.goal = clamp(settings.goal, 3, settings.size, Math.min(5, settings.size));
+    selGoal.innerHTML = "";
+    for(let g=3; g<=settings.size; g++){
+      const o = document.createElement("option");
+      o.value = String(g);
+      o.textContent = String(g);
+      selGoal.appendChild(o);
     }
+    selGoal.value = String(settings.goal);
 
-    // check win/draw
-    const win = checkWinner(player);
-    if (win){
-      toast(`${t("winner")}: ${S.names[player] || ("P"+(player+1))} (${MARKS[player]})`);
-      // keep game but stop moves
-      S.inGame = false;
-      saveState();
-      // hide bottom nav already hidden; allow exit/menu
-      renderGameTop();
-      return;
-    }
-    if (isDraw()){
-      toast(t("draw"));
-      S.inGame = false;
-      saveState();
-      renderGameTop();
-      return;
-    }
+    // AI visible only in ai mode
+    aiRow.style.display = (settings.mode==="ai") ? "grid" : "none";
 
-    // next turn
-    const pCount = (S.mode==="p3") ? 3 : (S.mode==="p4") ? 4 : 2;
-    S.turn = (S.turn + 1) % pCount;
+    // names
+    inpP1.value = settings.p1;
+    inpP2.value = settings.p2;
+    inpP3.value = settings.p3;
+    inpP4.value = settings.p4;
 
-    renderGameTop();
-    saveState();
-
-    maybeAIMove();
+    nameGrid34.style.display = (settings.mode==="p3" || settings.mode==="p4") ? "grid" : "none";
+    inpP2.placeholder = (settings.mode==="ai") ? "Bot" : "Player 2";
   }
 
-  function undoMove(){
-    if (!S.history.length) return;
-    // In AI mode we often want undo 2 moves (player + bot) for convenience.
-    if (S.mode==="ai"){
-      // undo last move
-      popUndoOnce();
-      // if still last move belongs to AI, undo again
-      if (S.history.length && S.turn===1){
-        popUndoOnce();
+  function rebuildGoalInGameOptions(){
+    const t = I18N[settings.lang];
+    selGoalInGame.innerHTML = "";
+    for(let g=3; g<=settings.size; g++){
+      const o = document.createElement("option");
+      o.value = String(g);
+      o.textContent = `${t.goalShort} ${g}`;
+      selGoalInGame.appendChild(o);
+    }
+    selGoalInGame.value = String(settings.goal);
+  }
+
+  function renderGameHeader(){
+    const t = I18N[settings.lang];
+    if(!board.length) return;
+
+    if(gameOver){
+      const res = checkWin(board, settings.size, settings.goal);
+      if(res.win){
+        const winner = SYMBOLS.indexOf(res.sym);
+        turnTitle.textContent = t.turn(safeName(playerName(winner)), res.sym);
+        statusPill.textContent = t.win;
+      }else{
+        turnTitle.textContent = t.draw;
+        statusPill.textContent = t.draw;
       }
     }else{
-      popUndoOnce();
+      const p = history.length % getMode().players;
+      turnTitle.textContent = t.turn(safeName(playerName(p)), SYMBOLS[p]);
+      statusPill.textContent = t.play;
     }
 
-    renderGrid();
-    renderGameTop();
-    saveState();
+    turnSub.textContent = t.sub(settings.size, settings.goal);
+    btnUndo.disabled = history.length === 0;
   }
 
-  function popUndoOnce(){
-    const last = S.history.pop();
-    if (!last) return;
-    S.board[last.index] = -1;
-    S.turn = last.turnBefore; // restore turn
-    // we keep goal as current (goal can be changed mid-game); no revert needed
+  function startNewGame(){
+    board = new Array(settings.size * settings.size).fill("");
+    history = [];
+    lastMoveIdx = null;
+    winLine = [];
+    gameOver = false;
+
+    localStorage.setItem(gameKey, JSON.stringify({
+      version: BUILD,
+      settingsSnapshot: {...settings},
+      board, history, lastMoveIdx, winLine, gameOver
+    }));
+
+    rebuildGoalInGameOptions();
+    renderGameHeader();
+    renderBoard();
+    go("game");
   }
 
-  function isDraw(){
-    return S.board.every(v => v !== -1);
+  function loadGame(){
+    try{
+      const raw = localStorage.getItem(gameKey);
+      if(!raw) return null;
+      const g = JSON.parse(raw);
+      if(g.version !== BUILD) return null;
+      if(g.settingsSnapshot) settings = {...settings, ...g.settingsSnapshot};
+      board = g.board || [];
+      history = g.history || [];
+      lastMoveIdx = g.lastMoveIdx ?? null;
+      winLine = g.winLine || [];
+      gameOver = !!g.gameOver;
+      return g;
+    }catch(e){ return null; }
   }
 
-  function checkWinner(player){
-    const n = S.size;
-    const need = S.goal;
-    const b = S.board;
+  function saveGame(){
+    localStorage.setItem(gameKey, JSON.stringify({
+      version: BUILD,
+      settingsSnapshot: {...settings},
+      board, history, lastMoveIdx, winLine, gameOver
+    }));
+  }
 
-    // scan all cells as start points, check 4 directions
-    const dirs = [
-      [1,0],  // down
-      [0,1],  // right
-      [1,1],  // diag down-right
-      [1,-1]  // diag down-left
-    ];
+  function clearGame(){
+    localStorage.removeItem(gameKey);
+  }
 
-    for (let r=0;r<n;r++){
-      for (let c=0;c<n;c++){
-        if (b[r*n+c] !== player) continue;
-        for (const [dr,dc] of dirs){
-          let ok = true;
-          for (let k=1;k<need;k++){
-            const rr = r + dr*k;
-            const cc = c + dc*k;
-            if (rr<0 || rr>=n || cc<0 || cc>=n){ ok=false; break; }
-            if (b[rr*n+cc] !== player){ ok=false; break; }
+  function renderBoard(){
+    boardEl.style.gridTemplateColumns = `repeat(${settings.size}, 1fr)`;
+    boardEl.innerHTML = "";
+
+    for(let i=0;i<board.length;i++){
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = "cell";
+      cell.textContent = board[i];
+
+      if(lastMoveIdx === i) cell.classList.add("cellLast");
+      if(winLine.includes(i)) cell.classList.add("cellWin");
+
+      const disabled = gameOver || !!board[i];
+      if(disabled) cell.classList.add("cellDisabled");
+
+      cell.addEventListener("click", ()=>{
+        if(disabled) return;
+        makeMove(i);
+      });
+
+      boardEl.appendChild(cell);
+    }
+  }
+
+  function makeMove(idx){
+    if(gameOver) return;
+    if(board[idx]) return;
+
+    const mode = getMode();
+    const p = history.length % mode.players;
+    board[idx] = SYMBOLS[p];
+    history.push({idx, player:p});
+    lastMoveIdx = idx;
+
+    const res = checkWin(board, settings.size, settings.goal);
+    if(res.win){
+      gameOver = true;
+      winLine = res.line;
+    }else if(history.length === board.length){
+      gameOver = true;
+      winLine = [];
+    }else{
+      winLine = [];
+    }
+
+    saveGame();
+    renderGameHeader();
+    renderBoard();
+
+    if(!gameOver && mode.ai){
+      const nextP = history.length % mode.players;
+      if(nextP === 1){
+        setTimeout(botMove, 90);
+      }
+    }
+  }
+
+  function botMove(){
+    if(gameOver) return;
+    const empties = [];
+    for(let i=0;i<board.length;i++) if(!board[i]) empties.push(i);
+    if(!empties.length) return;
+
+    const size = settings.size, goal = settings.goal;
+    const bot = "O", me = "X";
+
+    // win
+    for(const idx of empties){
+      board[idx]=bot;
+      const r = checkWin(board,size,goal);
+      board[idx]="";
+      if(r.win){ makeMove(idx); return; }
+    }
+    // block
+    for(const idx of empties){
+      board[idx]=me;
+      const r = checkWin(board,size,goal);
+      board[idx]="";
+      if(r.win){ makeMove(idx); return; }
+    }
+    // simple heuristic: center preference
+    let best = empties[0], bestScore = -1e9;
+    const center = (size-1)/2;
+    for(const idx of empties){
+      const r = Math.floor(idx/size), c = idx%size;
+      let sc = -(Math.abs(r-center)+Math.abs(c-center));
+      if(sc>bestScore){ bestScore=sc; best=idx; }
+    }
+    makeMove(best);
+  }
+
+  function doUndo(){
+    if(!history.length) return;
+
+    const mode = getMode();
+    // if game ended — reopen
+    if(gameOver){ gameOver=false; winLine=[]; }
+
+    const popOne = ()=>{
+      const last = history.pop();
+      if(!last) return;
+      board[last.idx] = "";
+      lastMoveIdx = history.length ? history[history.length-1].idx : null;
+    };
+
+    popOne();
+    if(mode.ai){
+      // remove bot move too if exists
+      if(history.length && history[history.length-1].player === 1) popOne();
+    }
+
+    // recompute win
+    const res = checkWin(board, settings.size, settings.goal);
+    if(res.win){ gameOver=true; winLine=res.line; }
+    else { gameOver=false; winLine=[]; }
+
+    saveGame();
+    renderGameHeader();
+    renderBoard();
+  }
+
+  function checkWin(b,size,goal){
+    const dirs=[[1,0],[0,1],[1,1],[1,-1]];
+    for(let r=0;r<size;r++){
+      for(let c=0;c<size;c++){
+        const start = b[r*size+c];
+        if(!start) continue;
+        for(const [dr,dc] of dirs){
+          const endR = r + dr*(goal-1);
+          const endC = c + dc*(goal-1);
+          if(endR<0||endR>=size||endC<0||endC>=size) continue;
+
+          let ok=true;
+          const line=[];
+          for(let k=0;k<goal;k++){
+            const rr=r+dr*k, cc=c+dc*k;
+            const v=b[rr*size+cc];
+            if(v!==start){ ok=false; break; }
+            line.push(rr*size+cc);
           }
-          if (ok) return true;
+          if(ok) return {win:true, sym:start, line};
         }
       }
     }
-    return false;
+    return {win:false, sym:"", line:[]};
   }
 
-  /* =======================
-     AI (heuristic + limited search)
-  ======================== */
-  function maybeAIMove(){
-    if (!S.inGame) return;
-    if (!isAITurn()) return;
-
-    // give UI a tick
-    setTimeout(() => {
-      const move = aiChooseMove();
-      if (move !== null && S.inGame){
-        doMove(move, 1);
-      }
-    }, 120);
+  function modalConfirm(text, title){
+    const t = I18N[settings.lang];
+    modalTitle.textContent = title || "";
+    modalText.textContent = text || "";
+    modalCancel.textContent = t.cancel;
+    modalOk.textContent = t.ok;
+    modalBack.classList.add("on");
+    return new Promise(res=>modalResolve=res);
+  }
+  function closeModal(ok){
+    modalBack.classList.remove("on");
+    if(modalResolve){ modalResolve(!!ok); modalResolve=null; }
   }
 
-  function aiChooseMove(){
-    const empties = [];
-    for (let i=0;i<S.board.length;i++){
-      if (S.board[i] === -1) empties.push(i);
-    }
-    if (!empties.length) return null;
+  // EVENTS
+  tabHome.addEventListener("click", ()=>{ go("home"); });
+  tabHome2.addEventListener("click", ()=>{ go("home"); });
 
-    // 1) win if possible
-    for (const idx of empties){
-      S.board[idx] = 1;
-      const w = checkWinner(1);
-      S.board[idx] = -1;
-      if (w) return idx;
-    }
-    // 2) block opponent win
-    for (const idx of empties){
-      S.board[idx] = 0;
-      const w = checkWinner(0);
-      S.board[idx] = -1;
-      if (w) return idx;
-    }
+  tabSettings.addEventListener("click", ()=>{ go("settings"); });
+  tabSettings2.addEventListener("click", ()=>{ go("settings"); });
 
-    // Difficulty affects "scoring" and randomness
-    const level = S.ai || "expert";
-    let randomness = 0.35;
-    let look = 1; // heuristic depth
-    if (level==="easy"){ randomness = 0.65; look = 1; }
-    if (level==="medium"){ randomness = 0.45; look = 1; }
-    if (level==="hard"){ randomness = 0.20; look = 2; }
-    if (level==="expert"){ randomness = 0.08; look = 2; }
+  btnStart.addEventListener("click", ()=> startNewGame());
 
-    // On big boards, keep it light
-    if (S.size >= 7) look = 1;
+  btnSave.addEventListener("click", ()=>{
+    settings.lang = selLang.value;
+    settings.theme = selTheme.value;
+    settings.size = clamp(selSize.value,3,10,8);
+    settings.goal = clamp(selGoal.value,3,settings.size, Math.min(5, settings.size));
+    settings.ai = selAI.value;
 
-    // Score moves
-    let best = [];
-    let bestScore = -Infinity;
-    for (const idx of empties){
-      const score = scoreMove(idx, 1) - scoreMove(idx, 0)*0.92;
-      if (score > bestScore){
-        bestScore = score;
-        best = [idx];
-      }else if (Math.abs(score - bestScore) < 1e-6){
-        best.push(idx);
-      }
-    }
+    settings.p1 = safeName(inpP1.value || "Alex");
+    settings.p2 = safeName(inpP2.value || (settings.mode==="ai" ? "Bot" : "Player 2"));
+    settings.p3 = safeName(inpP3.value || "Player 3");
+    settings.p4 = safeName(inpP4.value || "Player 4");
 
-    // randomness
-    if (Math.random() < randomness){
-      return empties[Math.floor(Math.random()*empties.length)];
-    }
-
-    // choose among best
-    return best[Math.floor(Math.random()*best.length)];
-  }
-
-  function scoreMove(idx, player){
-    // heuristic: count potentials in lines through idx
-    const n = S.size;
-    const need = S.goal;
-    const b = S.board;
-
-    // temporarily place
-    b[idx] = player;
-    const r0 = Math.floor(idx / n);
-    const c0 = idx % n;
-
-    const dirs = [
-      [1,0],
-      [0,1],
-      [1,1],
-      [1,-1]
-    ];
-
-    let score = 0;
-
-    for (const [dr,dc] of dirs){
-      // we look in a window around idx
-      let line = [];
-      for (let t=- (need-1); t<= (need-1); t++){
-        const rr = r0 + dr*t;
-        const cc = c0 + dc*t;
-        if (rr<0||rr>=n||cc<0||cc>=n) line.push(null);
-        else line.push(b[rr*n+cc]);
-      }
-
-      // evaluate all segments of length need
-      for (let s=0; s+need<=line.length; s++){
-        const seg = line.slice(s, s+need);
-        if (seg.includes(null)) continue;
-        // block if enemy present
-        const enemy = seg.some(v => v !== -1 && v !== player);
-        if (enemy) continue;
-        const mine = seg.filter(v => v === player).length;
-        const empty = seg.filter(v => v === -1).length;
-        if (mine === need) score += 100000;
-        else if (mine === need-1 && empty === 1) score += 2200;
-        else if (mine === need-2 && empty === 2) score += 520;
-        else if (mine >= 1) score += 40 * mine;
-        else score += 6; // pure empty segment still matters a bit
-      }
-    }
-
-    // center preference
-    const cr = (n-1)/2, cc = (n-1)/2;
-    const dist = Math.abs(r0 - cr) + Math.abs(c0 - cc);
-    score += Math.max(0, 25 - dist*4);
-
-    b[idx] = -1;
-    return score;
-  }
-
-  /* =======================
-     "Map" background generator (CSS-only)
-  ======================== */
-  function applyMapSeed(){
-    // use seed to change gradients slightly
-    const seed = S.mapSeed || 1;
-    const a = (seed * 37) % 100;
-    const b = (seed * 59) % 100;
-    const c = (seed * 83) % 100;
-
-    const bg = $("boardBg");
-    bg.style.background =
-      `radial-gradient(260px 200px at ${10+a}% ${18+b}%, rgba(33,199,196,.20), rgba(0,0,0,0) 60%),
-       radial-gradient(300px 260px at ${55+c}% ${30+a}%, rgba(33,199,196,.16), rgba(0,0,0,0) 60%),
-       radial-gradient(240px 240px at ${40+b}% ${78+c}%, rgba(0,0,0,.06), rgba(0,0,0,0) 62%),
-       linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.74))`;
-
-    if (S.theme === "dark"){
-      bg.style.background =
-        `radial-gradient(260px 200px at ${10+a}% ${18+b}%, rgba(33,199,196,.18), rgba(0,0,0,0) 60%),
-         radial-gradient(300px 260px at ${55+c}% ${30+a}%, rgba(33,199,196,.12), rgba(0,0,0,0) 60%),
-         radial-gradient(240px 240px at ${40+b}% ${78+c}%, rgba(0,0,0,.45), rgba(0,0,0,0) 62%),
-         linear-gradient(180deg, rgba(10,33,38,.94), rgba(8,26,31,.94))`;
-    }
-  }
-
-  /* =======================
-     Toast
-  ======================== */
-  let toastTimer = null;
-  function toast(msg){
-    if (!msg) return;
-    toastEl.textContent = msg;
-    toastEl.classList.remove("hidden");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toastEl.classList.add("hidden"), 2600);
-  }
-
-  /* =======================
-     Init UI from state
-  ======================== */
-  function init(){
-    $("selLang").value = S.lang;
-    $("selTheme").value = S.theme;
-    $("selAi").value = S.ai;
-    $("selTexture").value = S.texture;
-
+    saveSettings();
     applyTheme();
-    applyTexture();
+    applySettingsToForm();
+    renderAllTexts();
+  });
 
-    applyI18n();
-    buildModes();
-    buildSizes();
-    buildGoals();
-    syncPlayerInputs();
-    refreshSettingsMeta();
-    renderHomeSummary();
-    updateContinue();
+  selLang.addEventListener("change", ()=>{
+    settings.lang = selLang.value;
+    saveSettings();
+    applySettingsToForm();
+    renderAllTexts();
+  });
 
-    // if state says inGame, we stay at home; user can Continue
-    showPage("home");
+  selTheme.addEventListener("change", ()=>{
+    settings.theme = selTheme.value;
+    saveSettings();
+    applyTheme();
+    renderAllTexts();
+  });
+
+  selSize.addEventListener("change", ()=>{
+    settings.size = clamp(selSize.value,3,10,8);
+    settings.goal = clamp(settings.goal,3,settings.size, Math.min(5, settings.size));
+    saveSettings();
+    applySettingsToForm();
+    renderAllTexts();
+  });
+
+  selGoal.addEventListener("change", ()=>{
+    settings.goal = clamp(selGoal.value,3,settings.size, Math.min(5, settings.size));
+    saveSettings();
+    rebuildGoalInGameOptions();
+    renderAllTexts();
+  });
+
+  selGoalInGame.addEventListener("change", async ()=>{
+    const newGoal = clamp(selGoalInGame.value,3,settings.size,settings.goal);
+    if(newGoal === settings.goal) return;
+
+    const t = I18N[settings.lang];
+    if(history.length === 0){
+      settings.goal = newGoal;
+      saveSettings();
+      rebuildGoalInGameOptions();
+      renderAllTexts();
+      return;
+    }
+    const ok = await modalConfirm(t.confirmGoal, t.goal);
+    if(ok){
+      settings.goal = newGoal;
+      saveSettings();
+      startNewGame();
+    }else{
+      selGoalInGame.value = String(settings.goal);
+    }
+  });
+
+  btnExit.addEventListener("click", async ()=>{
+    const t = I18N[settings.lang];
+    const ok = await modalConfirm(t.confirmExit, t.exit);
+    if(ok){
+      clearGame();
+      go("home");
+    }
+  });
+
+  btnMenu.addEventListener("click", async ()=>{
+    const t = I18N[settings.lang];
+    const ok = await modalConfirm(t.confirmExit, t.menu);
+    if(ok){
+      clearGame();
+      go("home");
+    }
+  });
+
+  btnRestart.addEventListener("click", async ()=>{
+    const t = I18N[settings.lang];
+    const ok = await modalConfirm(t.confirmNew, t.restart);
+    if(ok) startNewGame();
+  });
+
+  btnUndo.addEventListener("click", ()=> doUndo());
+
+  modalCancel.addEventListener("click", ()=> closeModal(false));
+  modalOk.addEventListener("click", ()=> closeModal(true));
+  modalBack.addEventListener("click", (e)=>{ if(e.target===modalBack) closeModal(false); });
+
+  // INIT
+  applyTheme();
+  applySettingsToForm();
+  renderAllTexts();
+
+  const g = loadGame();
+  if(g && board.length){
+    rebuildGoalInGameOptions();
+    renderGameHeader();
+    renderBoard();
+    go("game");
+  }else{
+    go("home");
   }
-
-  init();
-
-})();
 </script>
 </body>
 </html>
