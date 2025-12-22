@@ -1,1328 +1,1774 @@
 <!doctype html>
-<html lang="ru" data-theme="light">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tic Tac Toe</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#22c7c7" />
+  <!-- Попытка подсказать WebView не кэшировать (не всегда помогает в Telegram, поэтому важнее ?v=... в URL) -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Tic Tac Toe+</title>
+
   <style>
     :root{
-      --accent:#2fd0cf;
-      --accent2:#22bdbd;
+      --teal-1:#35d3d2;
+      --teal-2:#18bfbf;
+      --teal-3:#10a8a8;
 
-      --bg:#f4f6f8;
+      --bg:#f4f7f7;
+      --text:#0b1a22;
+      --muted:#5e6b74;
+
       --card:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --line:#e6eaf0;
-      --shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
-      --shadow2: 0 6px 18px rgba(15, 23, 42, 0.08);
+      --stroke: rgba(15, 35, 45, .10);
+      --shadow: 0 16px 50px rgba(0,0,0,.10);
 
-      --btn:#ffffff;
-      --btnText:#0f172a;
+      --pill:#eef6f6;
+      --pillText:#0b1a22;
+
+      --btn:#18bfbf;
+      --btnText:#ffffff;
+
+      --btnGhost:#ffffff;
+      --btnGhostText:#0b1a22;
 
       --cell:#ffffff;
-      --cellLine:#dfe6ee;
+      --cellStroke: rgba(0,0,0,.10);
 
-      --radius:22px;
-      --radius2:18px;
-      --radius3:14px;
+      --safeTop: env(safe-area-inset-top, 0px);
+      --safeBottom: env(safe-area-inset-bottom, 0px);
+
+      --radiusXL: 28px;
+      --radiusL: 20px;
+      --radiusM: 16px;
+      --radiusS: 12px;
+
+      --maxW: 520px;
     }
 
-    html[data-theme="dark"]{
-      --bg:#0b1220;
-      --card:#101b2e;
-      --text:#e7eefc;
-      --muted:#9fb0cf;
-      --line:#1c2b46;
-      --shadow: 0 18px 50px rgba(0,0,0,.45);
-      --shadow2: 0 10px 28px rgba(0,0,0,.35);
+    [data-theme="dark"]{
+      --bg:#071b1f;
+      --text:#eaf6f7;
+      --muted:#a9c1c4;
 
-      --btn:#0f1a2c;
-      --btnText:#e7eefc;
+      --card:#0d252b;
+      --stroke: rgba(255,255,255,.12);
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
 
-      --cell:#0f1a2c;
-      --cellLine:#1d2c4a;
+      --pill:#0b2b31;
+      --pillText:#eaf6f7;
+
+      --btn:#22c7c7;
+      --btnText:#001115;
+
+      --btnGhost:#0d252b;
+      --btnGhostText:#eaf6f7;
+
+      --cell:#0b2026;
+      --cellStroke: rgba(255,255,255,.14);
     }
 
     *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      min-height:100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
       background: var(--bg);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       color: var(--text);
+      overflow-x:hidden;
+    }
+
+    /* фон/текстуры (рандомно) */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.85;
+      background:
+        radial-gradient(800px 500px at 75% -10%, rgba(53,211,210,.35), rgba(53,211,210,0) 60%),
+        radial-gradient(700px 500px at -10% 20%, rgba(24,191,191,.25), rgba(24,191,191,0) 60%),
+        radial-gradient(900px 600px at 50% 110%, rgba(16,168,168,.15), rgba(16,168,168,0) 60%);
+      z-index:-2;
+    }
+
+    .wrap{
+      min-height:100%;
+      padding: calc(18px + var(--safeTop)) 14px calc(18px + var(--safeBottom));
       display:flex;
       justify-content:center;
-      padding:18px 12px 88px;
+      align-items:center;
     }
+
     .app{
-      width:min(520px, 100%);
+      width: min(var(--maxW), 100%);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .topbar{
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .miniBadge{
+      display:flex; gap:10px; align-items:center;
+      padding:10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.45);
+      border: 1px solid rgba(255,255,255,.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    [data-theme="dark"] .miniBadge{
+      background: rgba(0,0,0,.25);
+      border-color: rgba(255,255,255,.10);
+    }
+    .logo{
+      width:36px;height:36px;border-radius:999px;
+      background: linear-gradient(180deg,var(--teal-1),var(--teal-3));
+      display:grid;place-items:center;
+      color:white; font-weight:800;
+      letter-spacing:.5px;
+      user-select:none;
+      flex:0 0 auto;
+    }
+    .miniActions{
+      display:flex;gap:8px;align-items:center;
+    }
+    .iconBtn{
+      width:40px;height:40px;border-radius:999px;
+      border: 1px solid rgba(255,255,255,.45);
+      background: rgba(255,255,255,.35);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display:grid; place-items:center;
+      cursor:pointer;
+      user-select:none;
+    }
+    [data-theme="dark"] .iconBtn{
+      border-color: rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+    }
+    .iconBtn:active{ transform: scale(.98); }
+
+    .hero{
+      border-radius: var(--radiusXL);
+      background: linear-gradient(180deg, var(--teal-1), var(--teal-3));
+      color:white;
+      padding:16px 16px 14px;
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .hero::after{
+      content:"";
+      position:absolute;
+      width:220px;height:220px;border-radius:999px;
+      right:-60px; top:-70px;
+      background: rgba(255,255,255,.18);
+    }
+    .hero h1{
+      margin:8px 0 6px;
+      font-size: 28px;
+      line-height: 1.1;
+      letter-spacing: -0.3px;
+    }
+    .hero .sub{
+      font-size: 14px;
+      opacity:.95;
+    }
+    .hero .row{
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .card{
+      border-radius: var(--radiusL);
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+
+    .titleRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .titleRow h2{
+      margin:0;
+      font-size:18px;
+      letter-spacing:-0.2px;
+    }
+    .muted{ color: var(--muted); font-size:13px; }
+
+    .btn{
+      border:none;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight:700;
+      cursor:pointer;
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-height: 44px;
+      white-space:nowrap;
+    }
+    .btnPrimary{
+      background: var(--btn);
+      color: var(--btnText);
+      box-shadow: 0 10px 24px rgba(24,191,191,.25);
+    }
+    .btnGhost{
+      background: var(--btnGhost);
+      color: var(--btnGhostText);
+      border: 1px solid var(--stroke);
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .seg{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .chip{
+      padding:10px 12px;
+      border-radius:999px;
+      border: 1px solid var(--stroke);
+      background: var(--btnGhost);
+      color: var(--btnGhostText);
+      font-weight:700;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip[aria-pressed="true"]{
+      border-color: rgba(24,191,191,.55);
+      box-shadow: 0 10px 26px rgba(24,191,191,.18);
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 420px){
+      .grid2{ grid-template-columns: 1fr; }
+      .hero h1{ font-size: 24px; }
+    }
+
+    label{ font-size:12px; color: var(--muted); display:block; margin:6px 2px 6px; }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    select, input{
+      width:100%;
+      padding:12px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: var(--card);
+      color: var(--text);
+      outline:none;
+      min-height: 44px;
+      font-size: 14px;
+    }
+
+    .saveBtnRow{ margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; }
+
+    /* нижнее меню - только на Home/Settings */
+    .bottomNav{
+      position: sticky;
+      bottom: calc(10px + var(--safeBottom));
+      margin-top: 8px;
+      border-radius: 24px;
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      padding:10px;
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .navItem{
+      flex:1;
+      border-radius: 18px;
+      padding:10px 12px;
+      display:flex; align-items:center; justify-content:center;
+      gap:10px;
+      cursor:pointer;
+      user-select:none;
+      border:1px solid transparent;
+      color: var(--muted);
+      font-weight:800;
+    }
+    .navItem[aria-current="page"]{
+      background: rgba(24,191,191,.10);
+      border-color: rgba(24,191,191,.25);
+      color: var(--text);
+    }
+
+    /* GAME */
+    .gameWrap{
+      width:min(var(--maxW), 100%);
       display:flex;
       flex-direction:column;
       gap:12px;
     }
 
-    /* Header */
-    .header{
-      background: linear-gradient(180deg, var(--accent), var(--accent2));
-      border-radius: 28px;
-      padding:18px 16px 16px;
-      box-shadow: var(--shadow);
-      position:relative;
-      overflow:hidden;
-    }
-    .header::after{
-      content:"";
-      position:absolute;
-      inset:-40px -60px auto auto;
-      width:180px;height:180px;
-      background: rgba(255,255,255,.18);
-      border-radius:999px;
-      transform: rotate(20deg);
-    }
-    .topRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      position:relative;
-      z-index:2;
-    }
-    .avatar{
-      width:42px;height:42px;
-      border-radius:999px;
-      background: rgba(255,255,255,.24);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:900;
-      color: rgba(255,255,255,.95);
-      letter-spacing:.2px;
-    }
-    .topIcons{display:flex;gap:8px}
-    .iconBtn{
-      width:42px;height:42px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.16);
-      color:#fff;
-      display:flex;align-items:center;justify-content:center;
-      cursor:pointer;
-      transition: transform .05s ease;
-    }
-    .iconBtn:active{transform: translateY(1px)}
-
-    /* NEW: Home content inside header */
-    .headerCard{
-      margin-top:14px;
-      background: rgba(255,255,255,.92);
-      border:1px solid rgba(255,255,255,.55);
-      border-radius: 22px;
-      padding:14px;
-      box-shadow: var(--shadow2);
-      position:relative;
-      z-index:2;
-    }
-    html[data-theme="dark"] .headerCard{
-      background: rgba(16,27,46,.88);
-      border-color: rgba(255,255,255,.06);
-    }
-    .hcTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .hcTitle{
-      font-weight:1000;
-      font-size:14px;
-      color: var(--text);
-    }
-    .hcMuted{
-      margin-top:6px;
-      color: var(--muted);
-      font-size:13px;
-      line-height:1.35;
-    }
-    .hcActions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    }
-
-    /* Cards */
-    .card{
-      background: var(--card);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      padding:14px;
-      box-shadow: var(--shadow2);
-    }
-    .cardTitle{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:10px;
-      font-weight:900;
-      font-size:14px;
-    }
-    .muted{color: var(--muted); font-size:13px; line-height:1.35}
-
-    /* Inputs */
-    .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media (max-width:420px){.row2{grid-template-columns:1fr}}
-    label{font-size:12px;color: var(--muted);display:block;margin-bottom:6px}
-    input, select, button{
-      font:inherit;
-      border-radius: 14px;
-      border:1px solid var(--line);
-      background: var(--btn);
-      color: var(--btnText);
-      padding:12px 12px;
-      outline:none;
-    }
-    select, input{width:100%}
-    button{cursor:pointer;transition: transform .05s ease; font-weight:900;}
-    button:active{transform: translateY(1px)}
-    .primary{
-      background: linear-gradient(180deg, var(--accent), var(--accent2));
-      color:#fff;
-      border-color: rgba(255,255,255,.0);
-      font-weight:1000;
-    }
-    .ghost{background: transparent}
-
-    .chips{display:flex;gap:8px;flex-wrap:wrap}
-    .chip{
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background: var(--btn);
-      color: var(--btnText);
-      cursor:pointer;
-      user-select:none;
-      font-weight:800;
-      font-size:13px;
-    }
-    .chip.active{
-      border-color: color-mix(in srgb, var(--accent2) 60%, var(--line));
-      box-shadow: 0 6px 16px rgba(34,189,189,.18);
-    }
-
-    /* Game */
     .gameTop{
+      border-radius: var(--radiusL);
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      padding: 12px;
       display:flex;
-      align-items:flex-start;
+      flex-direction:column;
+      gap:10px;
+    }
+    .gameTopRow{
+      display:flex;
       justify-content:space-between;
+      align-items:flex-start;
       gap:10px;
       flex-wrap:wrap;
     }
-    .turnLine{font-weight:900;font-size:14px}
-    .turnLine span{color: var(--accent2)}
-    .miniBar{display:flex;gap:8px;flex-wrap:wrap}
-    .mini{
-      padding:10px 12px;
-      border-radius: 999px;
-      background: var(--btn);
-      border:1px solid var(--line);
-      color: var(--btnText);
-      font-weight:800;
+    .turnLine{
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:-0.2px;
+    }
+    .miniLine{
+      margin-top:2px;
       font-size:13px;
+      color: var(--muted);
+      font-weight:700;
+    }
+    .gameBtns{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .btnSmall{
+      padding:10px 12px;
+      min-height: 40px;
+      font-weight:900;
     }
 
-    .boardWrap{
-      margin-top:12px;
+    .boardCard{
+      border-radius: var(--radiusL);
       background: var(--card);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      padding:12px;
-      box-shadow: var(--shadow2);
-      position:relative;
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      padding: 12px;
       overflow:hidden;
     }
-
-    .boardWrap::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      opacity: .28;
-      pointer-events:none;
-      background: var(--map-bg);
-      filter: saturate(1.05);
-    }
-    html[data-theme="dark"] .boardWrap::before{opacity:.22}
 
     .board{
-      position:relative;
-      z-index:1;
       display:grid;
-      gap:8px;
-      user-select:none;
-      touch-action: manipulation;
+      gap:10px;
+      width:100%;
     }
     .cell{
-      aspect-ratio:1/1;
-      border-radius: var(--radius3);
-      border:1px solid var(--cellLine);
-      background: color-mix(in srgb, var(--cell) 94%, transparent);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:1000;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      background: var(--cell);
+      border: 1px solid var(--cellStroke);
+      display:grid;
+      place-items:center;
+      font-weight: 1000;
+      font-size: clamp(16px, 3.6vw, 28px);
       cursor:pointer;
-      font-size: clamp(18px, 7.2vw, 40px);
-      transition: transform .05s ease, border-color .2s ease, background .2s ease;
-      backdrop-filter: blur(2px);
-    }
-    .cell:active{transform: scale(.985)}
-    .cell.win{
-      border-color: rgba(34,197,94,.75);
-      box-shadow: inset 0 0 0 2px rgba(34,197,94,.18);
-    }
-    .cell.disabled{cursor:not-allowed;opacity:.88}
-
-    /* Bottom Nav (ONLY 2 items) */
-    .bottomNav{
-      position:fixed;left:0;right:0;bottom:10px;
-      display:flex;justify-content:center;
-      pointer-events:none;z-index:50;
-    }
-    .navBar{
-      width:min(520px, calc(100% - 24px));
-      background: var(--card);
-      border:1px solid var(--line);
-      border-radius: 22px;
-      padding:8px 10px;
-      box-shadow: var(--shadow);
-      display:flex;
-      justify-content:space-between;
-      gap:8px;
-      pointer-events:auto;
-    }
-    .navItem{
-      flex:1;
-      border-radius: 18px;
-      padding:10px 10px;
-      display:flex;flex-direction:column;
-      align-items:center;justify-content:center;
-      gap:4px;
-      cursor:pointer;
-      color: var(--muted);
-      font-size:12px;
-      border:1px solid transparent;
       user-select:none;
+      position:relative;
+      overflow:hidden;
     }
-    .navItem b{font-size:14px;color: var(--muted)}
-    .navItem.active{
-      color: var(--text);
-      border-color: color-mix(in srgb, var(--accent2) 25%, var(--line));
-      background: color-mix(in srgb, var(--accent2) 10%, transparent);
+    .cell::after{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(120px 120px at 30% 20%, rgba(24,191,191,.14), transparent 55%);
+      opacity: var(--cellFx, 1);
+      pointer-events:none;
     }
-    .navItem.active b{color: var(--accent2)}
+    [data-theme="dark"] .cell::after{
+      background: radial-gradient(120px 120px at 30% 20%, rgba(24,191,191,.10), transparent 60%);
+    }
+    .cell:active{ transform: scale(.99); }
 
-    /* Modal */
-    .overlay{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.45);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-      z-index:80;
-    }
-    .overlay.show{display:flex}
-    .modal{
-      width:min(520px, 100%);
-      background: var(--card);
-      border:1px solid var(--line);
-      border-radius: 22px;
-      box-shadow: var(--shadow);
-      padding:14px;
-    }
-    .modalHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:10px;
-      font-weight:900;
-    }
-    .modalBody{color:var(--muted); font-size:13px; line-height:1.35}
-    .modalFoot{
-      display:flex;
-      justify-content:flex-end;
-      gap:8px;
-      margin-top:12px;
-      flex-wrap:wrap;
-    }
+    .sym0{ color:#0b1a22; }
+    .sym1{ color:#18bfbf; }
+    .sym2{ color:#7c59ff; }
+    .sym3{ color:#ff7a18; }
+
+    [data-theme="dark"] .sym0{ color:#eaf6f7; }
+    [data-theme="dark"] .sym1{ color:#22c7c7; }
+    [data-theme="dark"] .sym2{ color:#b69bff; }
+    [data-theme="dark"] .sym3{ color:#ffa25e; }
 
     .toast{
       position:fixed;
       left:50%;
-      bottom:92px;
-      transform: translateX(-50%);
-      background: rgba(15,23,42,.92);
-      color:#fff;
-      border-radius: 999px;
+      transform:translateX(-50%);
+      bottom: calc(16px + var(--safeBottom));
+      background: rgba(0,0,0,.75);
+      color: #fff;
       padding:10px 12px;
-      font-size:13px;
-      display:none;
-      z-index:90;
-      max-width:min(520px, calc(100% - 24px));
+      border-radius: 999px;
+      font-weight:800;
+      font-size: 13px;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index:9999;
     }
-    .toast.show{display:block}
-    html[data-theme="dark"] .toast{background: rgba(0,0,0,.72)}
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(-6px);
+    }
+
+    details{
+      border: 1px solid var(--stroke);
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: rgba(24,191,191,.05);
+    }
+    summary{
+      cursor:pointer;
+      font-weight:900;
+      outline:none;
+    }
+    .rulesText{
+      margin-top:8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight:700;
+    }
+
+    .hidden{ display:none !important; }
   </style>
 </head>
+
 <body>
-  <div class="app">
-
-    <!-- HEADER (NOW CONTAINS "HOME" CONTENT) -->
-    <div class="header" id="header">
-      <div class="topRow">
-        <div class="avatar">TT</div>
-        <div class="topIcons">
-          <button class="iconBtn" id="btnLang" title="Language">🌐</button>
-          <button class="iconBtn" id="btnTheme" title="Theme">🌓</button>
-        </div>
-      </div>
-
-      <!-- moved summary+buttons here -->
-      <div class="headerCard" id="homeCardInHeader">
-        <div class="hcTop">
-          <div>
-            <div class="hcTitle" data-i18n="home_title">Главная</div>
-            <div class="hcMuted" id="homeSummary"></div>
+  <div class="wrap">
+    <div class="app" id="app" data-theme="light">
+      <!-- Header mini -->
+      <div class="topbar" id="topbar">
+        <div class="miniBadge">
+          <div class="logo">TT</div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-weight:1000;letter-spacing:-0.2px" id="hdrTitle">Tic-Tac-Toe+</div>
+            <div class="muted" id="hdrSub">v<span id="verOut"></span></div>
           </div>
-          <button class="ghost" id="btnRules" data-i18n="rules_btn">Правила</button>
         </div>
-
-        <div class="hcActions">
-          <button class="primary" id="btnStart" data-i18n="start_game">Начать игру</button>
-          <button id="btnContinue" style="display:none;" data-i18n="continue">Продолжить</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- SETTINGS ONLY -->
-    <div id="viewSettings" class="card" style="display:none;">
-      <div class="cardTitle">
-        <span data-i18n="settings_title">Настройки</span>
-        <span class="muted" id="settingsHint"></span>
-      </div>
-
-      <div class="row2">
-        <div>
-          <label data-i18n="language">Язык</label>
-          <select id="selLang">
-            <option value="ru">Русский</option>
-            <option value="en">English</option>
-            <option value="uz">O‘zbek (lotin)</option>
-          </select>
-        </div>
-        <div>
-          <label data-i18n="theme">Тема</label>
-          <select id="selTheme">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
+        <div class="miniActions">
+          <button class="iconBtn" id="langBtn" title="Language">🌐</button>
+          <button class="iconBtn" id="themeBtn" title="Theme">🌓</button>
         </div>
       </div>
 
-      <div style="height:10px"></div>
+      <!-- HOME SCREEN -->
+      <div id="screenHome">
+        <div class="hero" id="hero">
+          <div class="sub" id="heroSmall">—</div>
+          <h1 id="heroTitle">—</h1>
+          <div class="sub" id="heroMeta">—</div>
 
-      <div>
-        <label data-i18n="mode">Режим</label>
-        <div class="chips" id="modeChips"></div>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <div class="row2">
-        <div>
-          <label data-i18n="size">Размер поля</label>
-          <select id="selSize"></select>
-        </div>
-        <div>
-          <label data-i18n="goal">Цель (в ряд)</label>
-          <select id="selGoal"></select>
-        </div>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <div class="row2" id="aiRow">
-        <div>
-          <label data-i18n="ai_diff">Сложность ИИ</label>
-          <select id="selAi">
-            <option value="easy" data-i18n="ai_easy">Лёгкий</option>
-            <option value="med" data-i18n="ai_med">Средний</option>
-            <option value="hard" data-i18n="ai_hard">Сложный</option>
-            <option value="exp" data-i18n="ai_exp">Эксперт</option>
-          </select>
-        </div>
-        <div></div>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <div id="namesBlock" class="row2"></div>
-
-      <div style="margin-top:12px;">
-        <button class="primary" id="btnSaveSettings" data-i18n="save">Сохранить</button>
-      </div>
-    </div>
-
-    <!-- GAME -->
-    <div id="viewGame" style="display:none;">
-      <div class="card">
-        <div class="gameTop">
-          <div>
-            <div class="turnLine" id="turnLine">—</div>
-            <div class="muted" id="miniInfo">—</div>
-          </div>
-
-          <div class="miniBar">
-            <select id="inGameGoal" class="mini" title="Goal"></select>
-            <button class="mini" id="btnUndo" data-i18n="undo">Undo</button>
-            <button class="mini" id="btnRestart" data-i18n="restart">Restart</button>
-            <button class="mini" id="btnMenu" data-i18n="menu">Меню</button>
+          <div class="row">
+            <button class="btn btnPrimary" id="btnStart">▶ <span id="startTxt">—</span></button>
+            <button class="btn btnGhost" id="btnContinue">⏵ <span id="contTxt">—</span></button>
           </div>
         </div>
       </div>
 
-      <div class="boardWrap" id="boardWrap" style="--map-bg: radial-gradient(circle at 20% 20%, rgba(47,208,207,.35), transparent 50%), radial-gradient(circle at 70% 70%, rgba(34,189,189,.25), transparent 55%);">
-        <div class="board" id="board"></div>
-      </div>
-    </div>
+      <!-- SETTINGS SCREEN -->
+      <div id="screenSettings" class="hidden">
+        <div class="card">
+          <div class="titleRow">
+            <div>
+              <h2 id="setTitle">—</h2>
+              <div class="muted" id="setSubtitle">—</div>
+            </div>
+          </div>
 
+          <div class="grid2" style="margin-top:10px">
+            <div class="field">
+              <label id="lblLang">—</label>
+              <select id="selLang">
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+                <option value="uz">O‘zbek (lotin)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label id="lblTheme">—</label>
+              <select id="selTheme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label id="lblMode">—</label>
+            <div class="seg" id="modeSeg"></div>
+          </div>
+
+          <div class="grid2" style="margin-top:10px">
+            <div class="field">
+              <label id="lblSize">—</label>
+              <select id="selSize"></select>
+            </div>
+
+            <div class="field">
+              <label id="lblGoal">—</label>
+              <select id="selGoal"></select>
+            </div>
+          </div>
+
+          <div class="grid2" style="margin-top:10px" id="aiBlock">
+            <div class="field">
+              <label id="lblAi">—</label>
+              <select id="selAi">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="expert">Expert</option>
+              </select>
+            </div>
+            <div class="field">
+              <label id="lblTexture">—</label>
+              <select id="selTexture">
+                <option value="auto">Auto</option>
+                <option value="aqua">Aqua</option>
+                <option value="map">Map</option>
+                <option value="paper">Paper</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid2" style="margin-top:10px">
+            <div class="field">
+              <label id="lblP1">—</label>
+              <input id="inpP1" placeholder="Alex" />
+            </div>
+            <div class="field">
+              <label id="lblP2">—</label>
+              <input id="inpP2" placeholder="Player 2" />
+            </div>
+          </div>
+
+          <div class="grid2" style="margin-top:10px" id="p34Block">
+            <div class="field">
+              <label id="lblP3">—</label>
+              <input id="inpP3" placeholder="Player 3" />
+            </div>
+            <div class="field">
+              <label id="lblP4">—</label>
+              <input id="inpP4" placeholder="Player 4" />
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <details>
+              <summary id="rulesTitle">—</summary>
+              <div class="rulesText" id="rulesBody">—</div>
+            </details>
+          </div>
+
+          <div class="saveBtnRow">
+            <button class="btn btnPrimary" id="btnSave">💾 <span id="saveTxt">—</span></button>
+            <button class="btn btnGhost" id="btnReset">↺ <span id="resetTxt">—</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GAME SCREEN -->
+      <div id="screenGame" class="hidden">
+        <div class="gameWrap">
+          <div class="gameTop">
+            <div class="gameTopRow">
+              <div>
+                <div class="turnLine" id="turnLine">—</div>
+                <div class="miniLine" id="miniLine">—</div>
+              </div>
+
+              <div class="gameBtns">
+                <div style="min-width:160px">
+                  <select id="selGoalInGame" title="Goal"></select>
+                </div>
+                <button class="btn btnGhost btnSmall" id="btnUndo"><span id="undoTxt">—</span></button>
+                <button class="btn btnGhost btnSmall" id="btnRestart"><span id="restartTxt">—</span></button>
+                <button class="btn btnPrimary btnSmall" id="btnMenu"><span id="menuTxt">—</span></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="boardCard" id="boardCard">
+            <div class="board" id="board"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- bottom nav (only home/settings) -->
+      <div class="bottomNav" id="bottomNav">
+        <div class="navItem" id="navHome" aria-current="page">⌂ <span id="navHomeTxt">—</span></div>
+        <div class="navItem" id="navSettings">⚙ <span id="navSetTxt">—</span></div>
+      </div>
+
+    </div>
   </div>
 
-  <!-- Bottom Nav: ONLY HOME + SETTINGS -->
-  <div class="bottomNav">
-    <div class="navBar">
-      <div class="navItem active" id="navHome"><b>⌂</b><span data-i18n="nav_home">Главная</span></div>
-      <div class="navItem" id="navSettings"><b>⚙</b><span data-i18n="nav_settings">Настройки</span></div>
-    </div>
-  </div>
-
-  <!-- RULES MODAL -->
-  <div class="overlay" id="overlayRules">
-    <div class="modal">
-      <div class="modalHead">
-        <span data-i18n="rules_title">Правила</span>
-        <button class="ghost" id="closeRules" data-i18n="close">Закрыть</button>
-      </div>
-      <div class="modalBody" id="rulesBody"></div>
-      <div class="modalFoot">
-        <button class="primary" id="okRules" data-i18n="ok">Ок</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast">—</div>
 
 <script>
-/* =========================
-   i18n RU/EN/UZ (lotin)
-   ========================= */
-const i18n = {
-  ru: {
-    home_title:"Главная",
-    rules_btn:"Правила",
-    start_game:"Начать игру",
-    continue:"Продолжить",
-    settings_title:"Настройки",
-    language:"Язык",
-    theme:"Тема",
-    mode:"Режим",
-    size:"Размер поля",
-    goal:"Цель (в ряд)",
-    ai_diff:"Сложность ИИ",
-    ai_easy:"Лёгкий",
-    ai_med:"Средний",
-    ai_hard:"Сложный",
-    ai_exp:"Эксперт",
-    save:"Сохранить",
+(() => {
+  const APP_VERSION = "2025.12.22-1"; // меняй это при каждом апдейте + меняй ?v=... в Telegram
+  const LS_KEY = "ttt_plus_state_v3";
 
-    undo:"Undo",
-    restart:"Restart",
-    menu:"Меню",
-    nav_home:"Главная",
-    nav_settings:"Настройки",
+  // ===== i18n =====
+  const I18N = {
+    ru: {
+      heroSmall: "Главная",
+      heroTitle: "Крестики-нолики+",
+      start: "Начать игру",
+      cont: "Продолжить",
+      contNA: "Нет сохранённой игры",
+      setTitle: "Настройки",
+      setSubtitle: "Язык · Тема · Режим · Поле · Цель · Имена",
+      lang: "Язык",
+      theme: "Тема",
+      mode: "Режим",
+      size: "Размер поля",
+      goal: "Цель (в ряд)",
+      ai: "Сложность ИИ",
+      texture: "Текстура",
+      p1: "Игрок 1 (X)",
+      p2: "Игрок 2 (O)",
+      p3: "Игрок 3 (▲)",
+      p4: "Игрок 4 (■)",
+      save: "Сохранить",
+      reset: "Сбросить всё",
+      rulesTitle: "Правила",
+      rulesBody:
+        "Цель — собрать заданное количество символов подряд (по горизонтали, вертикали или диагонали). " +
+        "Размер поля до 10×10. Цель (в ряд) должна быть ≤ размеру поля. " +
+        "В режиме с ИИ бот играет за O. В режимах на 3–4 игрока ходы идут по кругу. " +
+        "Во время игры можно менять цель (в ряд) — она применяется сразу.",
+      navHome: "Главная",
+      navSet: "Настройки",
 
-    rules_title:"Правила",
-    close:"Закрыть",
-    ok:"Ок",
+      mode_pvp: "Игрок vs Игрок",
+      mode_ai: "Игрок vs ИИ",
+      mode_3: "3 игрока",
+      mode_4: "4 игрока",
 
-    mode_pvp:"Игрок vs Игрок",
-    mode_ai:"Игрок vs ИИ",
-    mode_3p:"3 игрока",
-    mode_4p:"4 игрока",
+      easy: "Лёгкий",
+      medium: "Средний",
+      expert: "Эксперт",
 
-    p1:"Игрок 1",
-    p2:"Игрок 2",
-    p3:"Игрок 3",
-    p4:"Игрок 4",
-    bot:"Бот",
+      turn: "Ходит",
+      goalInline: "Цель (в ряд)",
+      undo: "Назад",
+      restart: "Заново",
+      menu: "Выйти",
 
-    turn:"Ходит",
-    win:"Победил",
-    draw:"Ничья",
-    saved:"Сохранено",
-    restored:"Продолжили игру",
-    goal_changed:"Цель обновлена"
-  },
-  en: {
-    home_title:"Home",
-    rules_btn:"Rules",
-    start_game:"Start Game",
-    continue:"Continue",
-    settings_title:"Settings",
-    language:"Language",
-    theme:"Theme",
-    mode:"Mode",
-    size:"Board size",
-    goal:"Target (in row)",
-    ai_diff:"AI difficulty",
-    ai_easy:"Easy",
-    ai_med:"Medium",
-    ai_hard:"Hard",
-    ai_exp:"Expert",
-    save:"Save",
+      win: "Победил",
+      draw: "Ничья",
+      saved: "Сохранено",
+      loaded: "Загружено",
+      cleared: "Сброшено",
+      needStart: "Сначала нажми «Начать игру»",
+    },
+    en: {
+      heroSmall: "Home",
+      heroTitle: "Tic-Tac-Toe+",
+      start: "Start game",
+      cont: "Continue",
+      contNA: "No saved game",
+      setTitle: "Settings",
+      setSubtitle: "Language · Theme · Mode · Board · Goal · Names",
+      lang: "Language",
+      theme: "Theme",
+      mode: "Mode",
+      size: "Board size",
+      goal: "Goal (in a row)",
+      ai: "AI difficulty",
+      texture: "Texture",
+      p1: "Player 1 (X)",
+      p2: "Player 2 (O)",
+      p3: "Player 3 (▲)",
+      p4: "Player 4 (■)",
+      save: "Save",
+      reset: "Reset all",
+      rulesTitle: "Rules",
+      rulesBody:
+        "Goal — build the chosen number in a row (horizontal, vertical or diagonal). " +
+        "Board size up to 10×10. Goal must be ≤ board size. " +
+        "In AI mode the bot plays as O. In 3–4 players turns go in a loop. " +
+        "During the game you can change the goal — it applies instantly.",
+      navHome: "Home",
+      navSet: "Settings",
 
-    undo:"Undo",
-    restart:"Restart",
-    menu:"Menu",
-    nav_home:"Home",
-    nav_settings:"Settings",
+      mode_pvp: "Player vs Player",
+      mode_ai: "Player vs AI",
+      mode_3: "3 players",
+      mode_4: "4 players",
 
-    rules_title:"Rules",
-    close:"Close",
-    ok:"OK",
+      easy: "Easy",
+      medium: "Medium",
+      expert: "Expert",
 
-    mode_pvp:"Player vs Player",
-    mode_ai:"Player vs AI",
-    mode_3p:"3 Players",
-    mode_4p:"4 Players",
+      turn: "Turn",
+      goalInline: "Goal",
+      undo: "Undo",
+      restart: "Restart",
+      menu: "Exit",
 
-    p1:"Player 1",
-    p2:"Player 2",
-    p3:"Player 3",
-    p4:"Player 4",
-    bot:"Bot",
+      win: "Winner",
+      draw: "Draw",
+      saved: "Saved",
+      loaded: "Loaded",
+      cleared: "Cleared",
+      needStart: "Press “Start game” first",
+    },
+    uz: {
+      heroSmall: "Bosh sahifa",
+      heroTitle: "X-O+",
+      start: "O‘yinni boshlash",
+      cont: "Davom ettirish",
+      contNA: "Saqlangan o‘yin yo‘q",
+      setTitle: "Sozlamalar",
+      setSubtitle: "Til · Mavzu · Rejim · Maydon · Maqsad · Ismlar",
+      lang: "Til",
+      theme: "Mavzu",
+      mode: "Rejim",
+      size: "Maydon o‘lchami",
+      goal: "Maqsad (qator)",
+      ai: "AI darajasi",
+      texture: "Tekstura",
+      p1: "1-o‘yinchi (X)",
+      p2: "2-o‘yinchi (O)",
+      p3: "3-o‘yinchi (▲)",
+      p4: "4-o‘yinchi (■)",
+      save: "Saqlash",
+      reset: "Hammasini tozalash",
+      rulesTitle: "Qoidalar",
+      rulesBody:
+        "Maqsad — tanlangan son bo‘yicha ketma-ket belgilarni yig‘ish (gorizontal, vertikal yoki diagonal). " +
+        "Maydon 10×10 gacha. Maqsad (qator) maydon o‘lchamidan katta bo‘lishi mumkin emas. " +
+        "AI rejimida bot O bilan o‘ynaydi. 3–4 o‘yinchida navbat aylana bo‘yicha. " +
+        "O‘yin paytida maqsadni o‘zgartirish mumkin — darhol ishlaydi.",
+      navHome: "Bosh",
+      navSet: "Sozlama",
 
-    turn:"Turn",
-    win:"Winner",
-    draw:"Draw",
-    saved:"Saved",
-    restored:"Game restored",
-    goal_changed:"Target updated"
-  },
-  uz: {
-    home_title:"Bosh sahifa",
-    rules_btn:"Qoidalar",
-    start_game:"O‘yinni boshlash",
-    continue:"Davom ettirish",
-    settings_title:"Sozlamalar",
-    language:"Til",
-    theme:"Mavzu",
-    mode:"Rejim",
-    size:"Maydon o‘lchami",
-    goal:"Maqsad (qator)",
-    ai_diff:"AI darajasi",
-    ai_easy:"Oson",
-    ai_med:"O‘rtacha",
-    ai_hard:"Qiyin",
-    ai_exp:"Ekspert",
-    save:"Saqlash",
+      mode_pvp: "O‘yinchi vs O‘yinchi",
+      mode_ai: "O‘yinchi vs AI",
+      mode_3: "3 o‘yinchi",
+      mode_4: "4 o‘yinchi",
 
-    undo:"Ortga (Undo)",
-    restart:"Qayta",
-    menu:"Menyu",
-    nav_home:"Bosh sahifa",
-    nav_settings:"Sozlamalar",
+      easy: "Oson",
+      medium: "O‘rtacha",
+      expert: "Ekspert",
 
-    rules_title:"Qoidalar",
-    close:"Yopish",
-    ok:"OK",
+      turn: "Navbat",
+      goalInline: "Maqsad",
+      undo: "Orqaga",
+      restart: "Qayta",
+      menu: "Chiqish",
 
-    mode_pvp:"O‘yinchi vs O‘yinchi",
-    mode_ai:"O‘yinchi vs AI",
-    mode_3p:"3 o‘yinchi",
-    mode_4p:"4 o‘yinchi",
-
-    p1:"1-o‘yinchi",
-    p2:"2-o‘yinchi",
-    p3:"3-o‘yinchi",
-    p4:"4-o‘yinchi",
-    bot:"Bot",
-
-    turn:"Navbat",
-    win:"G‘olib",
-    draw:"Durrang",
-    saved:"Saqlandi",
-    restored:"O‘yin tiklandi",
-    goal_changed:"Maqsad yangilandi"
-  }
-};
-
-const LS_PREF="ttt_bank_prefs_v3";
-const LS_SAVE="ttt_bank_save_v3";
-
-const defaultPrefs = {
-  lang:"ru",
-  theme:"light",
-  mode:"pvp",
-  size:5,
-  goal:3,
-  ai:"easy",
-  names:{p1:"Alex", p2:"Player 2", p3:"Player 3", p4:"Player 4"}
-};
-
-const mapSkins = [
-  { css:`radial-gradient(circle at 18% 22%, rgba(47,208,207,.35), transparent 52%),
-         radial-gradient(circle at 70% 38%, rgba(34,189,189,.22), transparent 58%),
-         radial-gradient(circle at 42% 78%, rgba(47,208,207,.18), transparent 55%),
-         linear-gradient(180deg, rgba(15,23,42,.04), transparent 60%)`},
-  { css:`repeating-radial-gradient(circle at 35% 45%, rgba(34,189,189,.18) 0 10px, transparent 10px 18px),
-         radial-gradient(circle at 75% 25%, rgba(47,208,207,.22), transparent 55%),
-         linear-gradient(180deg, rgba(15,23,42,.03), transparent 70%)`},
-  { css:`repeating-linear-gradient(135deg, rgba(34,189,189,.14) 0 10px, transparent 10px 22px),
-         radial-gradient(circle at 30% 30%, rgba(47,208,207,.20), transparent 55%),
-         radial-gradient(circle at 80% 75%, rgba(34,189,189,.14), transparent 58%)`},
-  { css:`radial-gradient(circle at 25% 35%, rgba(47,208,207,.20), transparent 55%),
-         radial-gradient(circle at 60% 65%, rgba(34,189,189,.18), transparent 60%),
-         repeating-linear-gradient(0deg, rgba(15,23,42,.03) 0 6px, transparent 6px 14px)`},
-  { css:`repeating-linear-gradient(90deg, rgba(47,208,207,.12) 0 8px, transparent 8px 18px),
-         repeating-linear-gradient(180deg, rgba(34,189,189,.10) 0 10px, transparent 10px 22px)`},
-];
-
-const state = {
-  prefs: load(LS_PREF, defaultPrefs),
-  view:"home", // home | settings | game
-  N:5,
-  K:3,
-  players:[],
-  turn:0,
-  board:[],
-  history:[],
-  winLine:[],
-  winner:null,
-  locked:false,
-  mapSkin: mapSkins[0].css
-};
-
-function load(k, fallback){
-  try{ return Object.assign({}, fallback, JSON.parse(localStorage.getItem(k)||"{}")); }
-  catch{ return JSON.parse(JSON.stringify(fallback)); }
-}
-function save(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
-function t(key){ return (i18n[state.prefs.lang] && i18n[state.prefs.lang][key]) || i18n.ru[key] || key; }
-
-function toast(msg, ms=1400){
-  const el=document.getElementById("toast");
-  el.textContent=msg;
-  el.classList.add("show");
-  clearTimeout(toast._t);
-  toast._t=setTimeout(()=>el.classList.remove("show"), ms);
-}
-
-function setTheme(theme){
-  state.prefs.theme = theme;
-  document.documentElement.dataset.theme = theme;
-  save(LS_PREF, state.prefs);
-}
-function setLang(lang){
-  state.prefs.lang = lang;
-  save(LS_PREF, state.prefs);
-  applyI18n();
-  renderAll();
-}
-
-function clampGoal(goal, size){
-  return Math.max(3, Math.min(Number(goal)||3, size));
-}
-
-const viewSettings = document.getElementById("viewSettings");
-const viewGame = document.getElementById("viewGame");
-
-function setView(v){
-  state.view=v;
-  viewSettings.style.display = (v==="settings")?"":"none";
-  viewGame.style.display = (v==="game")?"":"none";
-  setNavActive(v);
-}
-function setNavActive(v){
-  document.getElementById("navHome").classList.toggle("active", v==="home" || v==="game");
-  document.getElementById("navSettings").classList.toggle("active", v==="settings");
-}
-
-function applyI18n(){
-  document.querySelectorAll("[data-i18n]").forEach(el=>{
-    el.textContent = t(el.dataset.i18n);
-  });
-}
-
-function modeLabel(){
-  switch(state.prefs.mode){
-    case "pvp": return t("mode_pvp");
-    case "ai":  return t("mode_ai");
-    case "3p":  return t("mode_3p");
-    case "4p":  return t("mode_4p");
-    default: return t("mode_pvp");
-  }
-}
-
-function renderHome(){
-  const p = state.prefs;
-  const N = p.size;
-  const K = clampGoal(p.goal, N);
-
-  let playersText="";
-  if(p.mode==="ai"){
-    playersText = `${escapeHtml(p.names.p1)} (X), ${t("bot")} (O)`;
-  }else if(p.mode==="3p"){
-    playersText = `${escapeHtml(p.names.p1)} (X), ${escapeHtml(p.names.p2)} (O), ${escapeHtml(p.names.p3)} (△)`;
-  }else if(p.mode==="4p"){
-    playersText = `${escapeHtml(p.names.p1)} (X), ${escapeHtml(p.names.p2)} (O), ${escapeHtml(p.names.p3)} (△), ${escapeHtml(p.names.p4)} (□)`;
-  }else{
-    playersText = `${escapeHtml(p.names.p1)} (X), ${escapeHtml(p.names.p2)} (O)`;
-  }
-
-  // compact summary (no "Общий статус", no big title block, no play button)
-  document.getElementById("homeSummary").innerHTML =
-    `<div class="hcMuted"><b>${modeLabel()}</b> · ${N}×${N} · ${t("goal")}: ${K}</div>
-     <div class="hcMuted" style="margin-top:6px;">${playersText}</div>`;
-
-  document.getElementById("btnContinue").style.display =
-    localStorage.getItem(LS_SAVE) ? "" : "none";
-}
-
-function renderSettings(){
-  const p = state.prefs;
-
-  document.getElementById("selLang").value = p.lang;
-  document.getElementById("selTheme").value = p.theme;
-
-  const chips=document.getElementById("modeChips");
-  chips.innerHTML="";
-  const modes=[
-    {k:"pvp", label:t("mode_pvp")},
-    {k:"ai",  label:t("mode_ai")},
-    {k:"3p",  label:t("mode_3p")},
-    {k:"4p",  label:t("mode_4p")},
-  ];
-  for(const m of modes){
-    const d=document.createElement("div");
-    d.className="chip"+(p.mode===m.k?" active":"");
-    d.textContent=m.label;
-    d.onclick=()=>{
-      p.mode=m.k;
-      save(LS_PREF,p);
-      renderSettings();
-      renderHome();
-    };
-    chips.appendChild(d);
-  }
-
-  const selSize=document.getElementById("selSize");
-  selSize.innerHTML="";
-  for(let n=3;n<=10;n++){
-    const o=document.createElement("option");
-    o.value=String(n);
-    o.textContent=`${n}×${n}`;
-    if(p.size===n) o.selected=true;
-    selSize.appendChild(o);
-  }
-
-  const selGoal=document.getElementById("selGoal");
-  selGoal.innerHTML="";
-  const size=Number(p.size);
-  p.goal = clampGoal(p.goal, size);
-  for(let k=3;k<=size;k++){
-    const o=document.createElement("option");
-    o.value=String(k);
-    o.textContent=String(k);
-    if(p.goal===k) o.selected=true;
-    selGoal.appendChild(o);
-  }
-
-  document.getElementById("aiRow").style.display = (p.mode==="ai") ? "" : "none";
-  document.getElementById("selAi").value = p.ai;
-
-  const nb=document.getElementById("namesBlock");
-  nb.innerHTML="";
-
-  const makeInput=(key, labelTxt)=>{
-    const wrap=document.createElement("div");
-    const lab=document.createElement("label");
-    lab.textContent=labelTxt;
-    const inp=document.createElement("input");
-    inp.maxLength=16;
-    inp.value = p.names[key] || "";
-    inp.oninput=(e)=>{ p.names[key]=e.target.value; save(LS_PREF,p); renderHome(); };
-    wrap.appendChild(lab); wrap.appendChild(inp);
-    nb.appendChild(wrap);
+      win: "G‘olib",
+      draw: "Durang",
+      saved: "Saqlanndi",
+      loaded: "Yuklandi",
+      cleared: "Tozalandi",
+      needStart: "Avval “O‘yinni boshlash”ni bosing",
+    }
   };
 
-  makeInput("p1", `${t("p1")} (X)`);
+  // ===== state =====
+  const defaultState = () => ({
+    version: APP_VERSION,
+    lang: "ru",
+    theme: "light",
+    texture: "auto",
+    mode: "pvp", // pvp | ai | p3 | p4
+    size: 8,     // 3..10
+    goal: 5,     // 3..size
+    ai: "expert",
+    names: ["Alex", "Player 2", "Player 3", "Player 4"],
+    // game
+    inGame: false,
+    board: [],
+    turn: 0,
+    moves: [],
+    winner: null,
+    finished: false,
+    lastScreen: "home"
+  });
 
-  if(p.mode==="ai"){
-    const wrap=document.createElement("div");
-    const lab=document.createElement("label");
-    lab.textContent=`${t("p2")} (O)`;
-    const inp=document.createElement("input");
-    inp.value = t("bot");
-    inp.disabled=true;
-    wrap.appendChild(lab); wrap.appendChild(inp);
-    nb.appendChild(wrap);
-  }else{
-    makeInput("p2", `${t("p2")} (O)`);
+  let S = loadState() ?? defaultState();
+  if (!S.version) S.version = APP_VERSION;
+
+  // ===== DOM =====
+  const $ = (id) => document.getElementById(id);
+  const app = $("app");
+
+  const screenHome = $("screenHome");
+  const screenSettings = $("screenSettings");
+  const screenGame = $("screenGame");
+  const bottomNav = $("bottomNav");
+  const topbar = $("topbar");
+
+  const modeSeg = $("modeSeg");
+  const selSize = $("selSize");
+  const selGoal = $("selGoal");
+  const selGoalInGame = $("selGoalInGame");
+  const aiBlock = $("aiBlock");
+  const p34Block = $("p34Block");
+
+  const selLang = $("selLang");
+  const selTheme = $("selTheme");
+  const selAi = $("selAi");
+  const selTexture = $("selTexture");
+
+  const inpP1 = $("inpP1");
+  const inpP2 = $("inpP2");
+  const inpP3 = $("inpP3");
+  const inpP4 = $("inpP4");
+
+  const boardEl = $("board");
+  const verOut = $("verOut");
+
+  // buttons
+  const btnStart = $("btnStart");
+  const btnContinue = $("btnContinue");
+  const btnSave = $("btnSave");
+  const btnReset = $("btnReset");
+
+  const btnUndo = $("btnUndo");
+  const btnRestart = $("btnRestart");
+  const btnMenu = $("btnMenu");
+
+  const navHome = $("navHome");
+  const navSettings = $("navSettings");
+
+  const themeBtn = $("themeBtn");
+  const langBtn = $("langBtn");
+
+  // labels outputs
+  const out = {
+    heroSmall: $("heroSmall"),
+    heroTitle: $("heroTitle"),
+    heroMeta: $("heroMeta"),
+    startTxt: $("startTxt"),
+    contTxt: $("contTxt"),
+    setTitle: $("setTitle"),
+    setSubtitle: $("setSubtitle"),
+    lblLang: $("lblLang"),
+    lblTheme: $("lblTheme"),
+    lblMode: $("lblMode"),
+    lblSize: $("lblSize"),
+    lblGoal: $("lblGoal"),
+    lblAi: $("lblAi"),
+    lblTexture: $("lblTexture"),
+    lblP1: $("lblP1"),
+    lblP2: $("lblP2"),
+    lblP3: $("lblP3"),
+    lblP4: $("lblP4"),
+    saveTxt: $("saveTxt"),
+    resetTxt: $("resetTxt"),
+    rulesTitle: $("rulesTitle"),
+    rulesBody: $("rulesBody"),
+    navHomeTxt: $("navHomeTxt"),
+    navSetTxt: $("navSetTxt"),
+    turnLine: $("turnLine"),
+    miniLine: $("miniLine"),
+    undoTxt: $("undoTxt"),
+    restartTxt: $("restartTxt"),
+    menuTxt: $("menuTxt"),
+    hdrSub: $("hdrSub"),
+  };
+
+  // toast
+  const toast = $("toast");
+  let toastTimer = null;
+  const showToast = (msg) => {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 1400);
+  };
+
+  // ===== init selectors =====
+  verOut.textContent = APP_VERSION;
+
+  function clampGoal(size, goal){
+    const g = Math.max(3, Math.min(size, goal|0));
+    return g;
   }
 
-  if(p.mode==="3p" || p.mode==="4p") makeInput("p3", `${t("p3")} (△)`);
-  if(p.mode==="4p") makeInput("p4", `${t("p4")} (□)`);
+  function buildSizes(){
+    selSize.innerHTML = "";
+    for (let n=3; n<=10; n++){
+      const opt = document.createElement("option");
+      opt.value = String(n);
+      opt.textContent = `${n}×${n}`;
+      selSize.appendChild(opt);
+    }
+  }
+  function buildGoals(size, selectEl){
+    selectEl.innerHTML = "";
+    for (let g=3; g<=size; g++){
+      const opt = document.createElement("option");
+      opt.value = String(g);
+      opt.textContent = String(g);
+      selectEl.appendChild(opt);
+    }
+  }
 
-  document.getElementById("settingsHint").textContent = `${size}×${size} · ${t("goal")}: ${p.goal}`;
-}
+  buildSizes();
 
-/* Game */
-function symbolsForMode(mode){
-  if(mode==="4p") return ["X","O","△","□"];
-  if(mode==="3p") return ["X","O","△"];
-  return ["X","O"];
-}
-function setupPlayers(){
-  const p=state.prefs;
-  state.N = Number(p.size);
-  state.K = clampGoal(p.goal, state.N);
+  // ===== themes / texture =====
+  function applyTheme(){
+    app.setAttribute("data-theme", S.theme);
+    selTheme.value = S.theme;
+  }
 
-  const syms = symbolsForMode(p.mode);
-  const names = p.names;
+  function applyTexture(){
+    const t = (S.texture === "auto") ? pickAutoTexture() : S.texture;
+    // меняем чуть эффект на клетках + фон boardCard
+    const card = $("boardCard");
+    card.style.background = "var(--card)";
+    app.style.setProperty("--cellFx", "1");
 
-  if(p.mode==="ai"){
-    state.players = [
-      {sym:"X", name: names.p1 || "P1"},
-      {sym:"O", name: t("bot")}
+    if (t === "map"){
+      // псевдо “карта” (без внешних картинок): набор пятен
+      card.style.background = `
+        radial-gradient(260px 180px at 20% 30%, rgba(24,191,191,.12), transparent 60%),
+        radial-gradient(220px 160px at 70% 20%, rgba(16,168,168,.10), transparent 62%),
+        radial-gradient(240px 200px at 60% 80%, rgba(53,211,210,.10), transparent 60%),
+        var(--card)`;
+      app.style.setProperty("--cellFx", ".8");
+    } else if (t === "paper"){
+      card.style.background = `
+        linear-gradient(0deg, rgba(0,0,0,.03), rgba(0,0,0,0)),
+        repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0 2px, transparent 2px 10px),
+        var(--card)`;
+      app.style.setProperty("--cellFx", ".55");
+    } else if (t === "aqua"){
+      card.style.background = `
+        radial-gradient(320px 220px at 20% 25%, rgba(24,191,191,.12), transparent 60%),
+        radial-gradient(260px 220px at 80% 70%, rgba(53,211,210,.10), transparent 60%),
+        var(--card)`;
+      app.style.setProperty("--cellFx", "1");
+    }
+
+    selTexture.value = S.texture;
+  }
+
+  function pickAutoTexture(){
+    const arr = ["aqua","map","paper"];
+    // детерминированно по версии
+    const seed = hash(APP_VERSION) % arr.length;
+    return arr[seed];
+  }
+
+  function hash(str){
+    let h = 2166136261;
+    for (let i=0;i<str.length;i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h>>>0);
+  }
+
+  // ===== i18n apply =====
+  function T(){ return I18N[S.lang] ?? I18N.ru; }
+
+  function applyI18n(){
+    const t = T();
+
+    out.heroSmall.textContent = t.heroSmall;
+    out.heroTitle.textContent = t.heroTitle;
+
+    out.startTxt.textContent = t.start;
+    out.contTxt.textContent = t.cont;
+
+    out.setTitle.textContent = t.setTitle;
+    out.setSubtitle.textContent = t.setSubtitle;
+
+    out.lblLang.textContent = t.lang;
+    out.lblTheme.textContent = t.theme;
+    out.lblMode.textContent = t.mode;
+    out.lblSize.textContent = t.size;
+    out.lblGoal.textContent = t.goal;
+    out.lblAi.textContent = t.ai;
+    out.lblTexture.textContent = t.texture;
+
+    out.lblP1.textContent = t.p1;
+    out.lblP2.textContent = t.p2;
+    out.lblP3.textContent = t.p3;
+    out.lblP4.textContent = t.p4;
+
+    out.saveTxt.textContent = t.save;
+    out.resetTxt.textContent = t.reset;
+
+    out.rulesTitle.textContent = t.rulesTitle;
+    out.rulesBody.textContent = t.rulesBody;
+
+    out.navHomeTxt.textContent = t.navHome;
+    out.navSetTxt.textContent = t.navSet;
+
+    out.undoTxt.textContent = t.undo;
+    out.restartTxt.textContent = t.restart;
+    out.menuTxt.textContent = t.menu;
+
+    // mode chips text
+    renderModeSeg();
+
+    // AI select labels
+    const aiOpt = selAi.querySelectorAll("option");
+    aiOpt.forEach(o => {
+      if (o.value === "easy") o.textContent = t.easy;
+      if (o.value === "medium") o.textContent = t.medium;
+      if (o.value === "expert") o.textContent = t.expert;
+    });
+
+    // header sub
+    out.hdrSub.textContent = `v${APP_VERSION}`;
+  }
+
+  function modeLabel(mode){
+    const t = T();
+    if (mode === "pvp") return t.mode_pvp;
+    if (mode === "ai") return t.mode_ai;
+    if (mode === "p3") return t.mode_3;
+    if (mode === "p4") return t.mode_4;
+    return mode;
+  }
+
+  function renderModeSeg(){
+    const t = T();
+    const items = [
+      {k:"pvp", label:t.mode_pvp},
+      {k:"ai",  label:t.mode_ai},
+      {k:"p3",  label:t.mode_3},
+      {k:"p4",  label:t.mode_4},
     ];
-  }else{
-    const arr=[];
-    arr.push({sym:syms[0], name: names.p1 || "P1"});
-    arr.push({sym:syms[1], name: names.p2 || "P2"});
-    if(syms[2]) arr.push({sym:syms[2], name: names.p3 || "P3"});
-    if(syms[3]) arr.push({sym:syms[3], name: names.p4 || "P4"});
-    state.players = arr;
+    modeSeg.innerHTML = "";
+    for (const it of items){
+      const b = document.createElement("button");
+      b.className = "chip";
+      b.type = "button";
+      b.textContent = it.label;
+      b.setAttribute("aria-pressed", String(S.mode === it.k));
+      b.addEventListener("click", () => {
+        S.mode = it.k;
+        if (S.mode === "ai"){
+          // автоподставим имя бота
+          S.names[1] = botName();
+        }
+        enforceModeUI();
+        renderModeSeg();
+        saveState();
+      });
+      modeSeg.appendChild(b);
+    }
   }
-}
-function pickRandomMap(){
-  const idx = Math.floor(Math.random()*mapSkins.length);
-  state.mapSkin = mapSkins[idx].css;
-  document.getElementById("boardWrap").style.setProperty("--map-bg", state.mapSkin);
-}
-function buildBoard(){
-  const boardEl = document.getElementById("board");
-  boardEl.innerHTML="";
-  boardEl.style.gridTemplateColumns = `repeat(${state.N}, 1fr)`;
-  boardEl.style.gap = (state.N>=9) ? "6px" : "8px";
 
-  for(let i=0;i<state.N*state.N;i++){
-    const btn=document.createElement("div");
-    btn.className="cell";
-    btn.dataset.i = i;
-    btn.onclick=()=>play(i);
-    boardEl.appendChild(btn);
+  function botName(){
+    const t = T();
+    // локализуем “Bot”
+    if (S.lang === "ru") return "Бот";
+    if (S.lang === "uz") return "Bot";
+    return "Bot";
   }
-}
-function populateInGameGoal(){
-  const sel=document.getElementById("inGameGoal");
-  sel.innerHTML="";
-  for(let k=3;k<=state.N;k++){
-    const o=document.createElement("option");
-    o.value=String(k);
-    o.textContent=`${t("goal")}: ${k}`;
-    if(k===state.K) o.selected=true;
-    sel.appendChild(o);
+
+  // ===== enforce UI rules =====
+  function enforceModeUI(){
+    const isAI = S.mode === "ai";
+    aiBlock.classList.toggle("hidden", !isAI);
+
+    // имена
+    inpP1.value = S.names[0] ?? "Alex";
+    inpP2.value = (isAI ? botName() : (S.names[1] ?? "Player 2"));
+    inpP2.disabled = isAI;
+
+    const show34 = (S.mode === "p3" || S.mode === "p4");
+    p34Block.classList.toggle("hidden", !show34);
+
+    inpP3.value = S.names[2] ?? "Player 3";
+    inpP4.value = S.names[3] ?? "Player 4";
+    inpP4.parentElement.classList.toggle("hidden", S.mode !== "p4");
+
+    // sizes/goals
+    selSize.value = String(S.size);
+    buildGoals(S.size, selGoal);
+    S.goal = clampGoal(S.size, S.goal);
+    selGoal.value = String(S.goal);
+
+    buildGoals(S.size, selGoalInGame);
+    selGoalInGame.value = String(S.goal);
+
+    // ai
+    selAi.value = S.ai;
+    selLang.value = S.lang;
+    selTheme.value = S.theme;
+    selTexture.value = S.texture;
+
+    updateHeroMeta();
+    updateContinueBtn();
   }
-  sel.onchange=(e)=>{
-    const newK = clampGoal(e.target.value, state.N);
-    state.K = newK;
-    state.prefs.goal = newK;
-    save(LS_PREF, state.prefs);
-    state.winner=null;
-    state.winLine=[];
-    const res = checkWinner();
-    if(res){ finish(res); }
-    renderHome();
-    renderGameUI();
-    toast(t("goal_changed"));
-    saveGameState();
-  };
-}
 
-function startGame(){
-  setupPlayers();
-  state.board = Array(state.N*state.N).fill(null);
-  state.history = [];
-  state.winLine = [];
-  state.winner = null;
-  state.locked = false;
-  state.turn = 0;
-
-  pickRandomMap();
-  buildBoard();
-  populateInGameGoal();
-  renderGameUI();
-
-  setView("game");
-  saveGameState();
-  toast(t("saved"));
-
-  if(state.prefs.mode==="ai" && currentSym()==="O"){
-    state.locked=true;
-    setTimeout(botMove, 220);
+  function updateHeroMeta(){
+    const t = T();
+    const players = getPlayers();
+    const namesStr = players.map(p => `${p.name} (${p.sym})`).join(", ");
+    out.heroMeta.textContent = `${modeLabel(S.mode)} · ${S.size}×${S.size} · ${t.goalInline}: ${S.goal}\n${namesStr}`;
+    // маленькая строка сверху
+    out.heroSmall.textContent = t.heroSmall;
+    out.heroTitle.textContent = t.heroTitle;
   }
-}
-function continueGame(){
-  const saved = JSON.parse(localStorage.getItem(LS_SAVE)||"null");
-  if(!saved) return;
 
-  state.prefs = saved.prefs || state.prefs;
-  setTheme(state.prefs.theme);
-  setLang(state.prefs.lang);
-
-  state.N = saved.N || 5;
-  state.K = clampGoal(saved.K || state.prefs.goal || 3, state.N);
-  state.players = saved.players || [];
-  state.turn = saved.turn || 0;
-  state.board = saved.board || Array(state.N*state.N).fill(null);
-  state.history = saved.history || [];
-  state.winLine = [];
-  state.winner = null;
-  state.locked = false;
-
-  state.mapSkin = saved.mapSkin || mapSkins[0].css;
-  document.getElementById("boardWrap").style.setProperty("--map-bg", state.mapSkin);
-
-  buildBoard();
-  populateInGameGoal();
-  renderBoard();
-  renderGameUI();
-  setView("game");
-  toast(t("restored"));
-}
-
-function currentPlayer(){ return state.players[state.turn]; }
-function currentSym(){ return currentPlayer().sym; }
-
-function play(i){
-  if(state.locked || state.winner) return;
-  if(state.board[i]) return;
-  if(state.prefs.mode==="ai" && currentSym()==="O") return;
-
-  applyMove(i, currentSym());
-  const res = checkWinner();
-  if(res){ finish(res); return; }
-
-  nextTurn();
-  renderGameUI();
-  saveGameState();
-
-  if(state.prefs.mode==="ai" && currentSym()==="O"){
-    state.locked=true;
-    setTimeout(botMove, 160);
+  function updateContinueBtn(){
+    const t = T();
+    const has = hasSavedGame();
+    btnContinue.disabled = !has;
+    out.contTxt.textContent = has ? t.cont : t.contNA;
+    btnContinue.style.opacity = has ? "1" : ".55";
   }
-}
-function applyMove(i, sym){
-  state.board[i]=sym;
-  state.history.push({i, sym, turnBefore: state.turn});
-  const cell = document.querySelector(`.cell[data-i="${i}"]`);
-  if(cell) cell.textContent = sym;
-}
-function nextTurn(){
-  state.turn = (state.turn+1) % state.players.length;
-}
-function renderBoard(){
-  document.querySelectorAll(".cell").forEach(el=>{
-    const idx = Number(el.dataset.i);
-    el.textContent = state.board[idx] || "";
-    el.classList.toggle("disabled", !!state.board[idx] || state.locked || !!state.winner);
-    el.classList.remove("win");
+
+  // ===== navigation (screens) =====
+  function showScreen(which){
+    S.lastScreen = which;
+    const isGame = which === "game";
+
+    screenHome.classList.toggle("hidden", which !== "home");
+    screenSettings.classList.toggle("hidden", which !== "settings");
+    screenGame.classList.toggle("hidden", which !== "game");
+
+    // bottom nav only on home/settings
+    bottomNav.classList.toggle("hidden", isGame);
+
+    navHome.setAttribute("aria-current", which === "home" ? "page" : "false");
+    navSettings.setAttribute("aria-current", which === "settings" ? "page" : "false");
+    navHome.classList.toggle("hidden", isGame);
+    navSettings.classList.toggle("hidden", isGame);
+
+    // topbar always visible (как мини-хедер)
+    saveState();
+  }
+
+  navHome.addEventListener("click", () => showScreen("home"));
+  navSettings.addEventListener("click", () => showScreen("settings"));
+
+  // quick buttons
+  themeBtn.addEventListener("click", () => {
+    S.theme = (S.theme === "light") ? "dark" : "light";
+    applyTheme();
+    saveState();
   });
-  state.winLine.forEach(idx=>{
-    const el=document.querySelector(`.cell[data-i="${idx}"]`);
-    if(el) el.classList.add("win");
+
+  langBtn.addEventListener("click", () => {
+    const order = ["ru","en","uz"];
+    const idx = order.indexOf(S.lang);
+    S.lang = order[(idx+1) % order.length];
+    if (S.mode === "ai") S.names[1] = botName();
+    applyI18n();
+    enforceModeUI();
+    if (S.inGame) renderGameTop();
+    saveState();
   });
-}
-function renderGameUI(){
-  renderBoard();
-  const p = currentPlayer();
-  document.getElementById("turnLine").innerHTML = `${t("turn")}: <span>${escapeHtml(p.name)}</span> (${p.sym})`;
-  document.getElementById("miniInfo").textContent = `${state.N}×${state.N} · ${t("goal")}: ${state.K}`;
-}
 
-function checkWinner(){
-  const N=state.N, K=state.K, B=state.board;
-  const seqs=[];
-
-  for(let r=0;r<N;r++){
-    for(let c=0;c<=N-K;c++){
-      const s=[];
-      for(let t=0;t<K;t++) s.push(r*N+(c+t));
-      seqs.push(s);
-    }
-  }
-  for(let c=0;c<N;c++){
-    for(let r=0;r<=N-K;r++){
-      const s=[];
-      for(let t=0;t<K;t++) s.push((r+t)*N+c);
-      seqs.push(s);
-    }
-  }
-  for(let r=0;r<=N-K;r++){
-    for(let c=0;c<=N-K;c++){
-      const s=[];
-      for(let t=0;t<K;t++) s.push((r+t)*N+(c+t));
-      seqs.push(s);
-    }
-  }
-  for(let r=K-1;r<N;r++){
-    for(let c=0;c<=N-K;c++){
-      const s=[];
-      for(let t=0;t<K;t++) s.push((r-t)*N+(c+t));
-      seqs.push(s);
-    }
-  }
-
-  for(const s of seqs){
-    const a=B[s[0]];
-    if(!a) continue;
-    let ok=true;
-    for(let i=1;i<s.length;i++) if(B[s[i]]!==a){ ok=false; break; }
-    if(ok){
-      state.winLine=s;
-      state.winner=a;
-      return {winner:a, line:s};
-    }
-  }
-  if(B.every(Boolean)){
-    state.winner="D";
-    state.winLine=[];
-    return {winner:"D", line:[]};
-  }
-  return null;
-}
-
-function finish(res){
-  state.locked=false;
-  renderBoard();
-  localStorage.removeItem(LS_SAVE);
-
-  if(res.winner==="D"){
-    toast(t("draw"));
-  }else{
-    const name = state.players.find(p=>p.sym===res.winner)?.name || res.winner;
-    toast(`${t("win")}: ${name}`);
-  }
-}
-function undo(){
-  if(state.winner) return;
-  if(!state.history.length) return;
-
-  const pops = (state.prefs.mode==="ai") ? 2 : 1;
-  for(let k=0;k<pops;k++){
-    const last = state.history.pop();
-    if(!last) break;
-    state.board[last.i]=null;
-    state.turn = last.turnBefore;
-  }
-  state.winLine=[];
-  state.winner=null;
-  state.locked=false;
-  renderGameUI();
-  saveGameState();
-}
-function restart(){ startGame(); }
-
-function saveGameState(){
-  save(LS_SAVE,{
-    prefs: state.prefs,
-    N: state.N, K: state.K,
-    players: state.players,
-    turn: state.turn,
-    board: state.board,
-    history: state.history,
-    mapSkin: state.mapSkin
+  // settings inputs
+  selLang.addEventListener("change", () => {
+    S.lang = selLang.value;
+    if (S.mode === "ai") S.names[1] = botName();
+    applyI18n();
+    enforceModeUI();
+    if (S.inGame) renderGameTop();
+    saveState();
   });
-}
 
-/* Simple AI */
-function botMove(){
-  if(state.winner) { state.locked=false; return; }
+  selTheme.addEventListener("change", () => {
+    S.theme = selTheme.value;
+    applyTheme();
+    saveState();
+  });
 
-  const empties=[];
-  for(let i=0;i<state.board.length;i++) if(!state.board[i]) empties.push(i);
+  selTexture.addEventListener("change", () => {
+    S.texture = selTexture.value;
+    applyTexture();
+    saveState();
+  });
 
-  const win = findImmediate("O", empties);
-  if(win!=null){ state.locked=false; applyMove(win,"O"); afterBot(); return; }
-  const block = findImmediate("X", empties);
-  if(block!=null){ state.locked=false; applyMove(block,"O"); afterBot(); return; }
+  selSize.addEventListener("change", () => {
+    S.size = parseInt(selSize.value,10);
+    S.goal = clampGoal(S.size, S.goal);
+    buildGoals(S.size, selGoal);
+    selGoal.value = String(S.goal);
+    buildGoals(S.size, selGoalInGame);
+    selGoalInGame.value = String(S.goal);
+    enforceModeUI();
+    saveState();
+  });
 
-  const pick = pickHeuristic(empties);
-  state.locked=false;
-  applyMove(pick,"O");
-  afterBot();
-}
-function afterBot(){
-  const res=checkWinner();
-  if(res){ finish(res); return; }
-  nextTurn();
-  renderGameUI();
-  saveGameState();
-}
-function findImmediate(sym, empties){
-  for(const i of empties){
-    state.board[i]=sym;
-    const r=checkWinner();
-    state.board[i]=null;
-    state.winLine=[]; state.winner=null;
-    if(r && r.winner===sym) return i;
+  selGoal.addEventListener("change", () => {
+    S.goal = clampGoal(S.size, parseInt(selGoal.value,10));
+    selGoalInGame.value = String(S.goal);
+    updateHeroMeta();
+    saveState();
+  });
+
+  selAi.addEventListener("change", () => {
+    S.ai = selAi.value;
+    saveState();
+  });
+
+  // names
+  function pullNamesFromInputs(){
+    S.names[0] = (inpP1.value || "Alex").trim();
+    if (S.mode === "ai") {
+      S.names[1] = botName();
+    } else {
+      S.names[1] = (inpP2.value || "Player 2").trim();
+    }
+    S.names[2] = (inpP3.value || "Player 3").trim();
+    S.names[3] = (inpP4.value || "Player 4").trim();
   }
-  return null;
-}
-function pickHeuristic(empties){
-  const N=state.N;
-  const center = Math.floor(N/2)*N + Math.floor(N/2);
-  if(empties.includes(center)) return center;
+  [inpP1,inpP2,inpP3,inpP4].forEach(el => el.addEventListener("input", () => {
+    pullNamesFromInputs();
+    updateHeroMeta();
+    saveState();
+  }));
 
-  const hasNear = (idx)=>{
-    const r=Math.floor(idx/N), c=idx%N;
-    for(let dr=-1;dr<=1;dr++){
-      for(let dc=-1;dc<=1;dc++){
-        if(dr===0 && dc===0) continue;
-        const rr=r+dr, cc=c+dc;
-        if(rr>=0 && cc>=0 && rr<N && cc<N){
-          const j=rr*N+cc;
-          if(state.board[j]) return true;
+  // save/reset
+  btnSave.addEventListener("click", () => {
+    pullNamesFromInputs();
+    enforceModeUI();
+    saveState();
+    showToast(T().saved);
+  });
+
+  btnReset.addEventListener("click", () => {
+    const keepLang = S.lang;
+    const keepTheme = S.theme;
+    S = defaultState();
+    S.lang = keepLang;
+    S.theme = keepTheme;
+    applyTheme();
+    buildSizes();
+    applyI18n();
+    enforceModeUI();
+    applyTexture();
+    showScreen("home");
+    saveState(true);
+    showToast(T().cleared);
+  });
+
+  // ===== game logic =====
+  const SYMBOLS = ["X","O","▲","■"];
+
+  function playersCount(){
+    if (S.mode === "pvp") return 2;
+    if (S.mode === "ai") return 2;
+    if (S.mode === "p3") return 3;
+    if (S.mode === "p4") return 4;
+    return 2;
+  }
+
+  function getPlayers(){
+    const n = playersCount();
+    const arr = [];
+    for (let i=0;i<n;i++){
+      const name = (S.names[i] || `P${i+1}`).trim();
+      arr.push({ idx:i, name, sym: SYMBOLS[i] });
+    }
+    if (S.mode === "ai"){
+      arr[1].name = botName();
+    }
+    return arr;
+  }
+
+  function newGame(){
+    S.inGame = true;
+    S.finished = false;
+    S.winner = null;
+    S.turn = 0;
+    S.moves = [];
+    S.board = Array.from({length:S.size}, () => Array(S.size).fill(-1));
+    saveState();
+    applyTexture();
+    renderBoard();
+    renderGameTop();
+    showScreen("game");
+
+    // если AI и бот ходит первым — (у нас человек X всегда первый)
+  }
+
+  function hasSavedGame(){
+    // есть сохранение, если inGame и есть board + moves
+    return !!(S && S.board && Array.isArray(S.board) && S.board.length && Array.isArray(S.moves) && S.moves.length >= 0 && S.inGame);
+  }
+
+  btnStart.addEventListener("click", () => {
+    // старт всегда с нуля
+    newGame();
+  });
+
+  btnContinue.addEventListener("click", () => {
+    if (!hasSavedGame()){
+      showToast(T().needStart);
+      return;
+    }
+    // просто перерендер
+    S.inGame = true;
+    applyTexture();
+    renderBoard();
+    renderGameTop();
+    showScreen("game");
+    showToast(T().loaded);
+  });
+
+  btnUndo.addEventListener("click", () => undoMove());
+  btnRestart.addEventListener("click", () => {
+    newGame();
+  });
+  btnMenu.addEventListener("click", () => {
+    // выйти из игры (не удаляя полностью настройки)
+    S.inGame = false;
+    S.finished = false;
+    S.winner = null;
+    S.moves = [];
+    S.board = [];
+    saveState();
+    updateContinueBtn();
+    updateHeroMeta();
+    showScreen("home");
+  });
+
+  selGoalInGame.addEventListener("change", () => {
+    S.goal = clampGoal(S.size, parseInt(selGoalInGame.value,10));
+    selGoal.value = String(S.goal);
+    renderGameTop();
+    saveState();
+  });
+
+  function renderGameTop(){
+    const t = T();
+    const players = getPlayers();
+    const p = players[S.turn % players.length];
+
+    out.turnLine.textContent = `${t.turn}: ${p.name} (${p.sym})`;
+    out.miniLine.textContent = `${S.size}×${S.size} · ${t.goalInline}: ${S.goal}`;
+
+    // ensure goal selector
+    buildGoals(S.size, selGoalInGame);
+    selGoalInGame.value = String(S.goal);
+
+    // translate buttons (fix your issue: Undo/Restart stuck in EN)
+    out.undoTxt.textContent = t.undo;
+    out.restartTxt.textContent = t.restart;
+    out.menuTxt.textContent = t.menu;
+  }
+
+  function renderBoard(){
+    boardEl.innerHTML = "";
+    const n = S.size;
+    boardEl.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+
+    const players = getPlayers();
+    for (let r=0;r<n;r++){
+      for (let c=0;c<n;c++){
+        const v = S.board?.[r]?.[c] ?? -1;
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.dataset.r = String(r);
+        cell.dataset.c = String(c);
+        if (v >= 0){
+          cell.textContent = SYMBOLS[v];
+          cell.classList.add(`sym${v}`);
+        } else {
+          cell.textContent = "";
+        }
+
+        cell.addEventListener("click", () => {
+          if (!S.inGame || S.finished) return;
+
+          // AI mode: человек играет только за 0
+          if (S.mode === "ai" && (S.turn % 2) === 1) return;
+
+          placeMove(r,c);
+        });
+
+        boardEl.appendChild(cell);
+      }
+    }
+  }
+
+  function placeMove(r,c){
+    if (S.finished) return;
+    if (S.board[r][c] !== -1) return;
+
+    const pIdx = S.turn % playersCount();
+    S.board[r][c] = pIdx;
+    S.moves.push({r,c,p:pIdx});
+
+    // check win
+    const win = checkWinner(S.board, S.goal);
+    if (win.winner >= 0){
+      S.finished = true;
+      S.winner = win.winner;
+      saveState();
+      renderBoard();
+      renderGameTop();
+      showToast(`${T().win}: ${getPlayers()[S.winner].name}`);
+      return;
+    }
+    if (isFull(S.board)){
+      S.finished = true;
+      S.winner = -1;
+      saveState();
+      renderBoard();
+      renderGameTop();
+      showToast(T().draw);
+      return;
+    }
+
+    S.turn++;
+    saveState();
+    renderBoard();
+    renderGameTop();
+
+    // AI move
+    if (S.mode === "ai" && (S.turn % 2) === 1 && !S.finished){
+      setTimeout(() => {
+        const move = aiPickMove(S.board, S.goal, S.ai);
+        if (move) placeMove(move.r, move.c);
+      }, 120);
+    }
+  }
+
+  function undoMove(){
+    if (!S.moves.length || S.finished) {
+      if (S.finished) {
+        // позволим undo после победы: просто снимем флаг и откатим 1 ход (и, если AI, 2 хода)
+        // (чтобы было удобно)
+      }
+    }
+
+    const isAI = S.mode === "ai";
+
+    function popOne(){
+      const m = S.moves.pop();
+      if (!m) return false;
+      S.board[m.r][m.c] = -1;
+      S.turn = Math.max(0, S.turn - 1);
+      return true;
+    }
+
+    // если был финал — снимаем
+    S.finished = false;
+    S.winner = null;
+
+    // обычный undo
+    if (!popOne()){
+      renderBoard(); renderGameTop(); saveState(); return;
+    }
+
+    // если AI — откатываем ещё один ход бота (чтобы реально вернуть ход человеку)
+    if (isAI && S.moves.length){
+      // после отката мог оказаться ход бота — откатываем еще
+      if ((S.turn % 2) === 1){
+        popOne();
+      }
+    }
+
+    saveState();
+    renderBoard();
+    renderGameTop();
+  }
+
+  function isFull(board){
+    for (let r=0;r<board.length;r++){
+      for (let c=0;c<board.length;c++){
+        if (board[r][c] === -1) return false;
+      }
+    }
+    return true;
+  }
+
+  // winner check (any symbol >= goal in row)
+  function checkWinner(board, goal){
+    const n = board.length;
+    const dirs = [
+      {dr:0, dc:1},
+      {dr:1, dc:0},
+      {dr:1, dc:1},
+      {dr:1, dc:-1},
+    ];
+    for (let r=0;r<n;r++){
+      for (let c=0;c<n;c++){
+        const p = board[r][c];
+        if (p < 0) continue;
+        for (const d of dirs){
+          let k=1;
+          let rr=r+d.dr, cc=c+d.dc;
+          while (rr>=0 && rr<n && cc>=0 && cc<n && board[rr][cc]===p){
+            k++; rr+=d.dr; cc+=d.dc;
+            if (k>=goal) return { winner:p };
+          }
         }
       }
     }
-    return false;
-  };
-  const near = empties.filter(hasNear);
-  const pool = near.length ? near : empties;
-
-  const ai = state.prefs.ai;
-  if(ai==="easy") return pool[Math.floor(Math.random()*pool.length)];
-  if(ai==="med") return pool[Math.floor(Math.random()*Math.min(pool.length, Math.max(3, Math.floor(pool.length/2))))];
-
-  let best = pool[0], bestD=Infinity;
-  const cr=Math.floor(N/2), cc=Math.floor(N/2);
-  for(const idx of pool){
-    const r=Math.floor(idx/N), c=idx%N;
-    const d = Math.abs(r-cr)+Math.abs(c-cc);
-    if(d<bestD){ bestD=d; best=idx; }
+    return { winner:-1 };
   }
-  return best;
-}
 
-/* Rules */
-function openRules(){
-  const p=state.prefs;
-  const N=p.size;
-  const K=clampGoal(p.goal, N);
-  const mode=modeLabel();
-  const html = `
-    <b>${mode}</b><br/><br/>
-    <b>${t("goal")}:</b> ${K}<br/>
-    <b>${t("size")}:</b> ${N}×${N}<br/><br/>
-    • X / O (и △ / □ в режимах 3–4 игрока) ходят по очереди.<br/>
-    • Победа: <b>${K}</b> символов в ряд (гор/верт/диаг).<br/>
-    • В игре можно менять цель (в ряд) сверху.<br/>
-    • Undo: откат хода (vs AI — 2 хода).<br/>
-    • Ничья: поле заполнено и победителя нет.
-  `;
-  document.getElementById("rulesBody").innerHTML = html;
-  document.getElementById("overlayRules").classList.add("show");
-}
-function closeRules(){ document.getElementById("overlayRules").classList.remove("show"); }
+  // ===== AI =====
+  function aiPickMove(board, goal, level){
+    const n = board.length;
+    const empties = [];
+    for (let r=0;r<n;r++){
+      for (let c=0;c<n;c++){
+        if (board[r][c] === -1) empties.push({r,c});
+      }
+    }
+    if (!empties.length) return null;
 
-function escapeHtml(s){
-  return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-}
+    if (level === "easy"){
+      return empties[Math.floor(Math.random()*empties.length)];
+    }
 
-function renderAll(){
-  applyI18n();
-  renderHome();
-  renderSettings();
-}
+    // candidate moves: near existing marks (faster on big boards)
+    const cand = candidateMoves(board);
+    const moves = cand.length ? cand : empties;
 
-/* Wiring */
-function wire(){
-  document.documentElement.dataset.theme = state.prefs.theme;
+    // 1) immediate win
+    for (const m of moves){
+      const b2 = cloneBoard(board);
+      b2[m.r][m.c] = 1; // bot is O (index 1)
+      if (checkWinner(b2, goal).winner === 1) return m;
+    }
+    // 2) block immediate human win
+    for (const m of moves){
+      const b2 = cloneBoard(board);
+      b2[m.r][m.c] = 0; // human X
+      if (checkWinner(b2, goal).winner === 0) return m;
+    }
 
-  state.prefs.goal = clampGoal(state.prefs.goal, state.prefs.size);
-  save(LS_PREF, state.prefs);
+    if (level === "medium"){
+      // heuristic best score
+      let best = moves[0], bestScore = -1e9;
+      for (const m of moves){
+        const sc = heuristicScore(board, m, goal);
+        if (sc > bestScore){ bestScore=sc; best=m; }
+      }
+      return best;
+    }
 
-  renderAll();
-  setView("home");
+    // expert: limited minimax on candidates
+    const maxDepth = (n <= 5 ? 4 : (n <= 8 ? 3 : 2));
+    const limit = Math.min(22, moves.length); // cap
+    const shuffled = moves.slice().sort(() => Math.random()-0.5).slice(0, limit);
 
-  document.getElementById("btnLang").onclick=()=>{ setView("settings"); };
-  document.getElementById("btnTheme").onclick=()=>{
-    setTheme(state.prefs.theme==="light" ? "dark" : "light");
-    renderAll();
-  };
+    let best = shuffled[0], bestVal = -1e9;
+    for (const m of shuffled){
+      const b2 = cloneBoard(board);
+      b2[m.r][m.c] = 1;
+      const val = minimax(b2, goal, maxDepth-1, false, -1e9, 1e9);
+      if (val > bestVal){ bestVal = val; best = m; }
+    }
+    return best;
+  }
 
-  document.getElementById("btnRules").onclick=openRules;
-  document.getElementById("btnStart").onclick=startGame;
-  document.getElementById("btnContinue").onclick=continueGame;
+  function cloneBoard(b){ return b.map(row => row.slice()); }
 
-  document.getElementById("selLang").onchange=(e)=>setLang(e.target.value);
-  document.getElementById("selTheme").onchange=(e)=>{ setTheme(e.target.value); renderAll(); };
+  function candidateMoves(board){
+    const n = board.length;
+    const set = new Map();
+    const add = (r,c) => {
+      const k = r+"_"+c;
+      if (!set.has(k)) set.set(k,{r,c});
+    };
+    for (let r=0;r<n;r++){
+      for (let c=0;c<n;c++){
+        if (board[r][c] !== -1){
+          for (let dr=-1; dr<=1; dr++){
+            for (let dc=-1; dc<=1; dc++){
+              if (dr===0 && dc===0) continue;
+              const rr=r+dr, cc=c+dc;
+              if (rr>=0 && rr<n && cc>=0 && cc<n && board[rr][cc]===-1) add(rr,cc);
+            }
+          }
+        }
+      }
+    }
+    return Array.from(set.values());
+  }
 
-  document.getElementById("selSize").onchange=(e)=>{
-    state.prefs.size = Number(e.target.value);
-    state.prefs.goal = clampGoal(state.prefs.goal, state.prefs.size);
-    save(LS_PREF, state.prefs);
-    renderAll();
-  };
-  document.getElementById("selGoal").onchange=(e)=>{
-    state.prefs.goal = clampGoal(e.target.value, state.prefs.size);
-    save(LS_PREF, state.prefs);
-    renderHome();
-    renderSettings();
-  };
-  document.getElementById("selAi").onchange=(e)=>{
-    state.prefs.ai = e.target.value;
-    save(LS_PREF, state.prefs);
-  };
+  function minimax(board, goal, depth, isMax, alpha, beta){
+    const w = checkWinner(board, goal).winner;
+    if (w === 1) return 100000 + depth;   // bot wins
+    if (w === 0) return -100000 - depth;  // human wins
+    if (depth <= 0 || isFull(board)) return evalBoard(board, goal);
 
-  document.getElementById("btnSaveSettings").onclick=()=>{
-    save(LS_PREF, state.prefs);
-    renderAll();
-    toast(t("saved"));
-    setView("home");
-  };
+    const moves = candidateMoves(board);
+    const n = board.length;
+    const actualMoves = moves.length ? moves : allEmpty(board);
 
-  document.getElementById("btnUndo").onclick=undo;
-  document.getElementById("btnRestart").onclick=restart;
-  document.getElementById("btnMenu").onclick=()=>{ setView("home"); renderHome(); };
+    if (isMax){
+      let best = -1e9;
+      for (const m of actualMoves){
+        board[m.r][m.c] = 1;
+        const val = minimax(board, goal, depth-1, false, alpha, beta);
+        board[m.r][m.c] = -1;
+        best = Math.max(best, val);
+        alpha = Math.max(alpha, best);
+        if (beta <= alpha) break;
+      }
+      return best;
+    } else {
+      let best = 1e9;
+      for (const m of actualMoves){
+        board[m.r][m.c] = 0;
+        const val = minimax(board, goal, depth-1, true, alpha, beta);
+        board[m.r][m.c] = -1;
+        best = Math.min(best, val);
+        beta = Math.min(beta, best);
+        if (beta <= alpha) break;
+      }
+      return best;
+    }
+  }
 
-  document.getElementById("closeRules").onclick=closeRules;
-  document.getElementById("okRules").onclick=closeRules;
+  function allEmpty(board){
+    const n=board.length, arr=[];
+    for (let r=0;r<n;r++) for (let c=0;c<n;c++) if (board[r][c]===-1) arr.push({r,c});
+    return arr;
+  }
 
-  document.getElementById("navHome").onclick=()=>{ setView("home"); };
-  document.getElementById("navSettings").onclick=()=>{ setView("settings"); };
+  function evalBoard(board, goal){
+    // simple line potential scoring
+    return linePotential(board, 1, goal) - linePotential(board, 0, goal);
+  }
 
-  document.addEventListener("keydown",(e)=>{
-    if(state.view!=="game") return;
-    if(state.N===3 && e.key>="1" && e.key<="9") play(Number(e.key)-1);
-    if(e.key.toLowerCase()==="u") undo();
-    if(e.key.toLowerCase()==="r") restart();
-  });
-}
-wire();
+  function heuristicScore(board, move, goal){
+    const b2 = cloneBoard(board);
+    b2[move.r][move.c] = 1;
+    return evalBoard(b2, goal) + centerBonus(board.length, move);
+  }
+
+  function centerBonus(n, m){
+    const mid = (n-1)/2;
+    const d = Math.abs(m.r-mid) + Math.abs(m.c-mid);
+    return -d;
+  }
+
+  function linePotential(board, who, goal){
+    const n = board.length;
+    const dirs = [
+      {dr:0, dc:1},
+      {dr:1, dc:0},
+      {dr:1, dc:1},
+      {dr:1, dc:-1},
+    ];
+    let score = 0;
+    for (let r=0;r<n;r++){
+      for (let c=0;c<n;c++){
+        for (const d of dirs){
+          // window length=goal
+          let cnt=0, blocked=false;
+          for (let k=0;k<goal;k++){
+            const rr=r+d.dr*k, cc=c+d.dc*k;
+            if (rr<0 || rr>=n || cc<0 || cc>=n){ blocked=true; break; }
+            const v = board[rr][cc];
+            if (v === -1) continue;
+            if (v === who) cnt++;
+            else { blocked=true; break; }
+          }
+          if (!blocked && cnt>0){
+            score += Math.pow(3, cnt);
+          }
+        }
+      }
+    }
+    return score;
+  }
+
+  // ===== persistence =====
+  function saveState(force=false){
+    try{
+      const toSave = JSON.parse(JSON.stringify(S));
+      // если force — удалим игру
+      if (force){
+        toSave.inGame = false;
+        toSave.board = [];
+        toSave.moves = [];
+        toSave.finished = false;
+        toSave.winner = null;
+      }
+      localStorage.setItem(LS_KEY, JSON.stringify(toSave));
+    }catch(e){}
+  }
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      // миграция минимальная
+      if (!obj.size) return null;
+      obj.goal = clampGoal(obj.size, obj.goal ?? 3);
+      return obj;
+    }catch(e){
+      return null;
+    }
+  }
+
+  // ===== first render =====
+  function boot(){
+    applyTheme();
+    applyI18n();
+
+    // init selects from state
+    selLang.value = S.lang;
+    selTheme.value = S.theme;
+    selAi.value = S.ai;
+    selTexture.value = S.texture;
+
+    // sizes/goals
+    selSize.value = String(S.size);
+    buildGoals(S.size, selGoal);
+    selGoal.value = String(S.goal);
+    buildGoals(S.size, selGoalInGame);
+    selGoalInGame.value = String(S.goal);
+
+    enforceModeUI();
+    applyTexture();
+
+    // if previously in game, keep continue
+    updateContinueBtn();
+
+    // default screen
+    if (S.lastScreen === "settings") showScreen("settings");
+    else showScreen("home");
+  }
+
+  boot();
+})();
 </script>
 </body>
 </html>
