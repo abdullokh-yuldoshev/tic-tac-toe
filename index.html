@@ -4,88 +4,80 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-  <!-- Анти-кэш -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <title>Tic-Tac-Toe+</title>
+  <title>Tic-Tac-Toe Liquid</title>
 
   <style>
     :root{
       --safeTop: env(safe-area-inset-top, 0px);
       --safeBottom: env(safe-area-inset-bottom, 0px);
 
-      --rXL: 26px;
-      --rLG: 18px;
-      --rMD: 14px;
+      /* Жидкие цвета iOS 26 */
+      --accent-grad: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%);
+      --accent-glow: rgba(0, 114, 255, 0.4);
+      
+      --bg-grad: radial-gradient(circle at 50% 10%, rgba(0, 198, 255, 0.15) 0%, rgba(0,0,0,0) 60%),
+                 radial-gradient(circle at 90% 60%, rgba(0, 114, 255, 0.12) 0%, rgba(0,0,0,0) 50%),
+                 linear-gradient(180deg, #F2F4F8 0%, #E3E9F2 100%);
 
-      --shadow1: 0 18px 40px rgba(0,0,0,.12);
-      --shadow2: 0 10px 24px rgba(0,0,0,.10);
+      --text: #1d1d1f;
+      --text-sec: rgba(29, 29, 31, 0.6);
+      
+      /* Glassmorphism 3.0 */
+      --glass-bg: rgba(255, 255, 255, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      --blur: blur(24px);
 
-      --teal1:#22c1ba;
-      --teal2:#1aa8a2;
-
-      --text:#0e1b1a;
-      --muted: rgba(14,27,26,.62);
-      --card: rgba(255,255,255,.90);
-      --stroke: rgba(14,27,26,.12);
-
-      --bg1:#eaf6f6;
-      --bg2:#f4fbfb;
-
-      --btnBg: rgba(255,255,255,.55);
-      --btnText: rgba(14,27,26,.92);
-
-      --last: rgba(34,193,186,.12);
-      --win: rgba(34,193,186,.22);
-
-      /* Цвета фигур игроков (добавлено) */
-      --symX: #0f6e6a;
-      --symO: #ff7a2f;
-      --symT: #7b5cff;
-      --symS: #2f8cff;
+      --btn-bg: rgba(255, 255, 255, 0.7);
+      --btn-text: #1d1d1f;
+      
+      --r-card: 28px;
+      
+      /* Цвета фигур */
+      --symX: #007AFF;
+      --symO: #FF9500;
+      --symT: #AF52DE;
+      --symS: #30B0C7;
     }
 
     [data-theme="dark"]{
-      --text: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.62);
-      --card: rgba(15,28,30,.86);
-      --stroke: rgba(255,255,255,.12);
+      --bg-grad: radial-gradient(circle at 50% 10%, rgba(10, 132, 255, 0.2) 0%, rgba(0,0,0,0) 60%),
+                 radial-gradient(circle at 90% 60%, rgba(94, 92, 230, 0.15) 0%, rgba(0,0,0,0) 50%),
+                 linear-gradient(180deg, #000000 0%, #121212 100%);
 
-      --bg1:#071214;
-      --bg2:#0a1b1d;
+      --text: #f5f5f7;
+      --text-sec: rgba(245, 245, 247, 0.6);
 
-      --btnBg: rgba(0,0,0,.22);
-      --btnText: rgba(255,255,255,.92);
+      --glass-bg: rgba(30, 30, 30, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 
-      --shadow1: 0 18px 40px rgba(0,0,0,.45);
-      --shadow2: 0 10px 24px rgba(0,0,0,.38);
-
-      --last: rgba(255,255,255,.08);
-      --win: rgba(34,193,186,.22);
-
-      /* Учёт темной темы (добавлено) */
-      --symX: #55e0d8;
-      --symO: #ff9b63;
-      --symT: #b39bff;
-      --symS: #74b3ff;
+      --btn-bg: rgba(255, 255, 255, 0.1);
+      --btn-text: #ffffff;
+      
+      --symX: #0A84FF;
+      --symO: #FF9F0A;
+      --symT: #BF5AF2;
+      --symS: #64D2FF;
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
+    
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       color: var(--text);
-      overflow:hidden;
-      background:
-        radial-gradient(1100px 650px at 15% 0%, rgba(34,193,186,.20) 0%, rgba(34,193,186,0) 55%),
-        radial-gradient(900px 560px at 85% 20%, rgba(34,193,186,.16) 0%, rgba(34,193,186,0) 60%),
-        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+      background: var(--bg-grad);
+      background-attachment: fixed;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Важно для WebView/Telegram: */
     button, .chip, .tab, .cell{
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
@@ -97,387 +89,299 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: calc(var(--safeTop) + 18px) 16px calc(var(--safeBottom) + 18px);
+      padding: calc(var(--safeTop) + 20px) 16px calc(var(--safeBottom) + 20px);
     }
 
     .stage{
-      width:min(520px, 100%);
+      width:min(440px, 100%);
       display:flex;
       flex-direction:column;
-      gap:14px;
+      gap:20px;
       position:relative;
       z-index: 1;
     }
 
-    .center{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:14px;
+    /* --- LIQUID CARDS --- */
+    .glass-panel{
       width:100%;
-    }
-
-    .hero{
-      width:100%;
-      border-radius: var(--rXL);
-      background: linear-gradient(135deg, var(--teal1) 0%, var(--teal2) 100%);
-      box-shadow: var(--shadow1);
-      padding: 18px;
+      border-radius: var(--r-card);
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      padding: 24px;
       position:relative;
-      overflow:hidden;
+      transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
-    .hero::after{
-      content:"";
-      position:absolute;
-      right:-60px;
-      top:-40px;
-      width:180px;
-      height:180px;
-      border-radius:999px;
-      background: rgba(255,255,255,.18);
-      pointer-events:none;
+    
+    /* --- HERO --- */
+    .hero{
+      text-align: center;
+      padding: 32px 24px;
     }
-
-    .heroKicker{font-size:13px; color:rgba(255,255,255,.90); font-weight:700;}
-    .heroTitle{margin:6px 0 0; font-size:34px; line-height:1.05; color:rgba(255,255,255,.96); font-weight:900;}
-    .heroMeta{margin-top:10px; color:rgba(255,255,255,.92); font-size:14px; font-weight:700; line-height:1.35;}
-    .heroActions{margin-top:14px; display:flex; gap:12px; flex-wrap:wrap;}
-
+    
+    .heroTitle{
+      margin: 0;
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: var(--accent-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 12px var(--accent-glow));
+    }
+    
+    .heroMeta{
+      margin-top: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-sec);
+    }
+    
+    /* --- BUTTONS --- */
     .btn{
       appearance:none;
       border:none;
       cursor:pointer;
-      border-radius:999px;
-      padding: 12px 16px;
+      border-radius: 99px;
+      padding: 16px 32px;
+      font-size: 17px;
+      font-weight: 600;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap:10px;
-      font-weight:900;
-      font-size:15px;
-      user-select:none;
-      transition: transform .06s ease, opacity .12s ease;
-      position:relative;
-      z-index: 2;
+      gap: 10px;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
     }
-    .btn:active{transform:scale(.98)}
+    .btn:active{ transform: scale(0.94); }
+    
     .btnPrimary{
-      background: rgba(255,255,255,.22);
-      color: rgba(255,255,255,.95);
-      border: 1px solid rgba(255,255,255,.28);
+      background: var(--accent-grad);
+      color: white;
+      box-shadow: 0 10px 20px var(--accent-glow);
+    }
+    .btnPrimary:hover{
+      box-shadow: 0 14px 28px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+    .btnPrimary:active{
+      transform: scale(0.96) translateY(0);
+    }
+
+    .btnSec{
+      background: var(--btn-bg);
+      color: var(--btn-text);
       backdrop-filter: blur(10px);
-    }
-    .btnDisabled{opacity:.45; cursor:not-allowed;}
-
-    .panel{
-      width:100%;
-      border-radius: var(--rXL);
-      background: var(--card);
-      box-shadow: var(--shadow2);
-      border: 1px solid var(--stroke);
-      padding: 16px;
-      position:relative;
-      z-index:2;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
-    .panelHeader{display:flex; justify-content:space-between; gap:12px; align-items:baseline; margin-bottom:10px;}
-    .panelTitle{margin:0; font-size:26px; font-weight:950;}
-    .panelHint{font-size:13px; color:var(--muted); font-weight:700;}
-
-    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-    @media(max-width:420px){ .grid2{grid-template-columns:1fr;} .heroTitle{font-size:30px;} }
-
-    .field{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
-    .label{font-size:13px; color:var(--muted); font-weight:800;}
-
-    select,input{
-      width:100%;
-      padding: 12px;
-      font-size:16px;
-      border-radius: 14px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.55);
-      color: var(--text);
-      outline:none;
+    /* --- TABBAR (Floating) --- */
+    .tabbar-wrap{
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
     }
-    [data-theme="dark"] select, [data-theme="dark"] input{
-      background: rgba(0,0,0,.22);
-      color: var(--text);
-    }
-
-    .chips{display:flex; flex-wrap:wrap; gap:10px;}
-    .chip{
-      padding: 11px 14px;
-      border-radius:999px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.55);
-      font-weight:900;
-      cursor:pointer;
-      user-select:none;
-      position:relative;
-      z-index:3;
-    }
-    [data-theme="dark"] .chip{background: rgba(0,0,0,.18);}
-    .chip:active{transform:scale(.98)}
-    .chipOn{
-      border-color: rgba(34,193,186,.55);
-      background: rgba(34,193,186,.10);
-      box-shadow: 0 0 0 3px rgba(34,193,186,.10) inset;
-    }
-
-    .saveRow{margin-top:14px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
-    .btnSave{
-      background: linear-gradient(180deg, rgba(34,193,186,1) 0%, rgba(26,168,162,1) 100%);
-      color: rgba(255,255,255,.96);
-      border:none;
-      padding: 13px 18px;
-      font-size:16px;
-      font-weight:950;
-    }
-    .mini{font-size:12px; color:var(--muted); font-weight:800;}
-
     .tabbar{
-      width:100%;
-      border-radius:999px;
-      padding: 10px;
-      background: rgba(15,28,30,.10);
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow2);
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 99px;
+      padding: 6px;
       display:flex;
-      gap:10px;
-      position:relative;
-      z-index:2;
+      gap: 4px;
+      box-shadow: var(--glass-shadow);
+      border: 1px solid var(--glass-border);
     }
-    [data-theme="dark"] .tabbar{background: rgba(0,0,0,.25);}
-
     .tab{
-      flex:1;
       border:none;
       background: transparent;
-      border-radius:999px;
-      padding: 12px 14px;
-      font-weight:950;
-      cursor:pointer;
-      user-select:none;
-      color: var(--btnText);
-      position:relative;
-      z-index:3;
+      padding: 10px 20px;
+      border-radius: 99px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-sec);
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
-    .tab:active{transform:scale(.985)}
-    .tabOn{
-      background: rgba(34,193,186,.14);
-      border: 1px solid rgba(34,193,186,.35);
+    .tab.tabOn{
+      background: var(--text);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
+    [data-theme="dark"] .tab.tabOn{ background: #fff; color: #000; }
 
-    /* GAME */
-    .gameWrap{width:100%; display:flex; flex-direction:column; gap:12px;}
+    /* --- FORMS --- */
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    
+    .field{ margin-bottom: 16px; }
+    .label{ font-size: 13px; font-weight: 600; color: var(--text-sec); margin-bottom: 8px; margin-left: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    input, select{
+      width:100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: none;
+      background: rgba(120, 120, 128, 0.12);
+      color: var(--text);
+      font-size: 17px;
+      font-family: inherit;
+      outline: none;
+      transition: background 0.2s;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus{ background: rgba(120, 120, 128, 0.18); }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+    .chip{
+      padding: 10px 18px;
+      border-radius: 99px;
+      background: rgba(120, 120, 128, 0.12);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 14px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip.chipOn{
+      background: transparent;
+      border-color: #007AFF;
+      color: #007AFF;
+    }
+    [data-theme="dark"] .chip.chipOn{ border-color: #0A84FF; color: #0A84FF; }
+
+    /* --- GAME BOARD --- */
     .gameTop{
-      width:100%;
-      border-radius: var(--rXL);
-      background: var(--card);
-      box-shadow: var(--shadow2);
-      border: 1px solid var(--stroke);
-      padding: 14px;
-      position:relative;
-      z-index:2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
     }
-    .topRow{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
-    .turnTitle{margin:0; font-size:22px; font-weight:950;}
-    .subLine{margin-top:4px; font-size:14px; color:var(--muted); font-weight:800;}
-    .exitBtn{
-      border-radius:999px;
-      border:1px solid var(--stroke);
-      background: var(--btnBg);
-      color: var(--btnText);
-      font-weight:950;
-      padding: 10px 14px;
-      cursor:pointer;
-      user-select:none;
-      position:relative;
-      z-index:3;
-    }
-    .exitBtn:active{transform:scale(.98)}
-
-    .goalRow{margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-    .goalSelect{flex:1; min-width: 220px;}
-    .statusPill{
-      margin-left:auto;
-      border-radius:999px;
-      border:1px solid var(--stroke);
-      background: var(--btnBg);
-      padding: 10px 12px;
-      font-weight:950;
-      color: var(--btnText);
-      user-select:none;
-      position:relative;
-      z-index:2;
-    }
-
-    .controlRow{margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;}
-    .ctrlBtn{
-      border-radius:999px;
-      border:1px solid var(--stroke);
-      background: var(--btnBg);
-      color: var(--btnText);
-      font-weight:950;
-      padding: 10px 14px;
-      cursor:pointer;
-      user-select:none;
-      position:relative;
-      z-index:3;
-    }
-    .ctrlBtn:active{transform:scale(.98)}
-    .ctrlBtn[disabled]{opacity:.45; cursor:not-allowed;}
-
-    .boardCard{
-      width:100%;
-      border-radius: var(--rXL);
-      background: var(--card);
-      box-shadow: var(--shadow2);
-      border: 1px solid var(--stroke);
-      padding: 14px;
-      position:relative;
-      z-index:2;
+    .turnTitle{ font-size: 22px; font-weight: 700; }
+    .status{ font-size: 14px; font-weight: 600; color: var(--text-sec); }
+    
+    .board-frame{
+      aspect-ratio: 1/1;
+      width: 100%;
+      background: rgba(120, 120, 128, 0.08);
+      border-radius: 24px;
+      padding: 8px;
     }
     .board{
-      width:100%;
-      aspect-ratio:1/1;
-      display:grid;
-      gap:8px;
-      padding:10px;
-      border-radius: 22px;
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.02);
-
-      /* ФИКС: чтобы клетки не меняли размер при появлении символов (добавлено) */
-      grid-auto-rows: 1fr;
+      width: 100%;
+      height: 100%;
+      display: grid;
     }
-    [data-theme="dark"] .board{background: rgba(255,255,255,.04);}
-
+    
     .cell{
-      border-radius: 16px;
-      border: 1px solid rgba(14,27,26,.10);
-      background: rgba(255,255,255,.62);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:950;
-      font-size: clamp(16px, 3vw, 26px);
-      cursor:pointer;
-      user-select:none;
-      position:relative;
-      z-index:1;
-      padding: 0;
+      background: var(--glass-bg);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.4);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+      
+      /* ФИКС: чтобы клетки не меняли размер */
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden; 
       line-height: 1;
-      show: block;
+      font-size: var(--cell-fs);
     }
-    [data-theme="dark"] .cell{
-      background: rgba(0,0,0,.22);
-      border-color: rgba(255,255,255,.10);
+    [data-theme="dark"] .cell{ border-color: rgba(255,255,255,0.08); }
+    
+    .cell:active{ transform: scale(0.9); }
+    .cell.cellDisabled{ cursor: default; transform: none; opacity: 1; }
+    .cell.cellWin{
+      background: var(--accent-glow);
+      border-color: var(--symX); 
     }
-    .cell:active{transform:scale(.98)}
-    .cellDisabled{cursor:not-allowed; opacity:.9;}
-    .cellLast{background: var(--last); border-color: rgba(34,193,186,.40);}
-    .cellWin{background: var(--win); border-color: rgba(34,193,186,.55);}
 
-    /* Цветные символы (добавлено) */
-    .sym{font-weight:950;}
-    .symX{color: var(--symX);}
-    .symO{color: var(--symO);}
-    .symT{color: var(--symT);}
-    .symS{color: var(--symS);}
+    .sym{ font-weight: 800; display:block; }
+    .symX{ color: var(--symX); filter: drop-shadow(0 2px 8px rgba(0,122,255,0.3)); }
+    .symO{ color: var(--symO); filter: drop-shadow(0 2px 8px rgba(255,149,0,0.3)); }
 
-    .hidden{display:none !important;}
-
-    /* MODAL: когда скрыта — не перехватывает клики */
+    /* --- MODAL --- */
     .modalBack{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.40);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-      z-index: 50;
+      position:fixed; inset:0; z-index:100;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(5px);
+      display:none; align-items:center; justify-content:center;
+      opacity: 0; transition: opacity 0.3s;
     }
-    .modalBack.on{display:flex;}
+    .modalBack.on{ display:flex; opacity: 1; }
+    
     .modal{
-      width:min(420px, 100%);
-      border-radius: 22px;
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow1);
-      padding: 14px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(30px);
+      width: min(320px, 80%);
+      padding: 24px;
+      border-radius: 24px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-    .modalTitle{margin:0; font-size:18px; font-weight:950;}
-    .modalText{margin:8px 0 12px; color:var(--muted); font-size:14px; font-weight:700; line-height:1.35;}
-    .modalBtns{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;}
-    .btnPlain{
-      background: var(--btnBg);
-      color: var(--btnText);
-      border: 1px solid var(--stroke);
-      font-weight:950;
-    }
+    .modalBack.on .modal{ transform: scale(1); }
+    
+    .modalTitle{ font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+    .modalText{ font-size: 15px; color: var(--text-sec); margin-bottom: 20px; }
+    
+    .modalBtns{ display: flex; gap: 12px; }
+    .btnModal{ flex: 1; padding: 12px; border-radius: 14px; font-weight: 600; border: none; cursor: pointer; font-size: 15px;}
+    .btnCancel{ background: rgba(120, 120, 128, 0.12); color: var(--text); }
+    .btnOk{ background: var(--accent-grad); color: white; }
 
-    /* Toast уведомление (добавлено) */
+    .hidden{ display: none !important; }
+    .center-col{ display: flex; flex-direction: column; align-items: center; width: 100%; }
+
     .toast{
-      position: fixed;
-      left: 50%;
-      bottom: calc(var(--safeBottom) + 18px);
-      transform: translateX(-50%) translateY(20px);
-      opacity: 0;
-      pointer-events: none;
-      z-index: 60;
-      background: rgba(0,0,0,.65);
-      color: rgba(255,255,255,.95);
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 13px;
-      backdrop-filter: blur(10px);
-      transition: opacity .18s ease, transform .18s ease;
-      border: 1px solid rgba(255,255,255,.16);
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+      background: rgba(255,255,255,0.9); color: black;
+      padding: 12px 24px; border-radius: 99px; font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      z-index: 200; opacity: 0; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-    [data-theme="dark"] .toast{
-      background: rgba(255,255,255,.14);
-      border-color: rgba(255,255,255,.18);
-    }
-    .toast.on{
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    [data-theme="dark"] .toast{ background: rgba(40,40,40,0.9); color: white; }
+    .toast.on{ opacity: 1; transform: translateX(-50%) translateY(0); }
+
   </style>
 </head>
 
 <body>
+
   <div class="app">
     <div class="stage">
-
-      <!-- HOME -->
-      <div id="screenHome" class="center">
-        <div class="hero">
-          <div class="heroKicker" id="homeKicker">Главная</div>
-          <div class="heroTitle" id="homeTitle">Tic-Tac-Toe+</div>
-          <div class="heroMeta" id="homeMeta"></div>
-          <div class="heroActions">
+    
+      <div id="screenHome" class="center-col">
+        <div class="glass-panel hero">
+          <div class="heroTitle">Tic-Tac-Toe</div>
+          <div style="font-size:18px; font-weight:300; opacity:0.7; margin-top:4px;">Liquid Edition</div>
+          <div class="heroMeta" id="homeMeta">Загрузка...</div>
+          
+          <div style="margin-top: 32px;">
             <button id="btnStart" class="btn btnPrimary" type="button">
-              <span>▶</span><span id="btnStartText">Начать игру</span>
+              ▶ Начать игру
             </button>
           </div>
         </div>
 
-        <div class="tabbar">
-          <button id="tabHome" class="tab tabOn" type="button">⌂ <span id="tabHomeText">Главная</span></button>
-          <button id="tabSettings" class="tab" type="button">⚙ <span id="tabSettingsText">Настройки</span></button>
+        <div class="tabbar-wrap">
+          <div class="tabbar">
+            <button id="tabHome" class="tab tabOn">Главная</button>
+            <button id="tabSettings" class="tab">Настройки</button>
+          </div>
         </div>
       </div>
 
-      <!-- SETTINGS -->
-      <div id="screenSettings" class="center hidden">
-        <div class="panel">
-          <div class="panelHeader">
-            <div class="panelTitle" id="settingsTitle">Настройки</div>
-            <div class="panelHint" id="settingsHint">Сохрани — и нажми “Начать игру”</div>
+      <div id="screenSettings" class="center-col hidden">
+        <div class="glass-panel">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="font-size:24px; font-weight:800;">Настройки</div>
           </div>
 
           <div class="grid2">
@@ -486,26 +390,26 @@
               <select id="selLang">
                 <option value="ru">Русский</option>
                 <option value="en">English</option>
-                <option value="uz">O‘zbek (lotin)</option>
+                <option value="uz">O‘zbek</option>
               </select>
             </div>
             <div class="field">
               <div class="label" id="lblTheme">Тема</div>
               <select id="selTheme">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
+                <option value="light">Светлая</option>
+                <option value="dark">Тёмная</option>
               </select>
             </div>
           </div>
 
           <div class="field">
-            <div class="label" id="lblMode">Режим</div>
+            <div class="label" id="lblMode">Режим игры</div>
             <div class="chips" id="modeChips"></div>
           </div>
 
           <div class="grid2">
             <div class="field">
-              <div class="label" id="lblSize">Размер поля</div>
+              <div class="label" id="lblSize">Поле</div>
               <select id="selSize"></select>
             </div>
             <div class="field">
@@ -513,174 +417,119 @@
               <select id="selGoal"></select>
             </div>
           </div>
+          
+          <div class="field" id="aiRow">
+             <div class="label" id="lblAI">Сложность ИИ</div>
+             <select id="selAI"></select>
+          </div>
 
-          <div class="grid2" id="aiRow">
-            <div class="field">
-              <div class="label" id="lblAI">Сложность ИИ</div>
-              <select id="selAI">
-                <option value="easy">Лёгкая</option>
-                <option value="normal">Нормальная</option>
-                <option value="hard">Сложная</option>
-                <option value="expert">Эксперт</option>
-              </select>
+          <div style="margin-top:10px; border-top:1px solid rgba(120,120,128,0.1); padding-top:16px;">
+            <div class="label">Имена игроков</div>
+            <div class="grid2">
+               <input id="inpP1" maxlength="10" placeholder="Игрок 1" />
+               <input id="inpP2" maxlength="10" placeholder="Игрок 2" />
             </div>
-            <div class="field">
-              <div class="label">Подсказка</div>
-              <input type="text" readonly value="Для больших полей ИИ — эвристика (без лагов)" />
+            <div class="grid2" id="nameGrid34" style="display:none; margin-top:12px;">
+               <input id="inpP3" maxlength="10" placeholder="Игрок 3" />
+               <input id="inpP4" maxlength="10" placeholder="Игрок 4" />
             </div>
           </div>
 
-          <div class="grid2">
-            <div class="field">
-              <div class="label" id="lblP1">Игрок 1 (X)</div>
-              <input id="inpP1" maxlength="16" placeholder="Alex" />
-            </div>
-            <div class="field">
-              <div class="label" id="lblP2">Игрок 2 (O)</div>
-              <input id="inpP2" maxlength="16" placeholder="Player 2" />
-            </div>
-          </div>
-
-          <div class="grid2" id="nameGrid34" style="display:none;">
-            <div class="field">
-              <div class="label" id="lblP3">Игрок 3 (△)</div>
-              <input id="inpP3" maxlength="16" placeholder="Player 3" />
-            </div>
-            <div class="field">
-              <div class="label" id="lblP4">Игрок 4 (□)</div>
-              <input id="inpP4" maxlength="16" placeholder="Player 4" />
-            </div>
-          </div>
-
-          <div class="saveRow">
-            <button id="btnSave" class="btn btnSave" type="button"><span id="btnSaveText">Сохранить</span></button>
-            <div class="mini" id="buildText"></div>
+          <div style="margin-top: 24px;">
+            <button id="btnSave" class="btn btnPrimary" style="width:100%">Сохранить настройки</button>
           </div>
         </div>
-
-        <div class="tabbar">
-          <button id="tabHome2" class="tab" type="button">⌂ <span id="tabHomeText2">Главная</span></button>
-          <button id="tabSettings2" class="tab tabOn" type="button">⚙ <span id="tabSettingsText2">Настройки</span></button>
+        
+        <div class="tabbar-wrap">
+          <div class="tabbar">
+            <button id="tabHome2" class="tab">Главная</button>
+            <button id="tabSettings2" class="tab tabOn">Настройки</button>
+          </div>
         </div>
       </div>
 
-      <!-- GAME -->
-      <div id="screenGame" class="hidden">
-        <div class="gameWrap">
+      <div id="screenGame" class="center-col hidden">
+        <div class="glass-panel">
           <div class="gameTop">
-            <div class="topRow">
-              <div>
-                <div class="turnTitle" id="turnTitle">Ходит: Alex (X)</div>
-                <div class="subLine" id="turnSub">8×8 · Цель (в ряд): 5</div>
-              </div>
-              <button class="exitBtn" id="btnExit" type="button">× Выйти</button>
+            <div>
+              <div class="turnTitle" id="turnTitle">Ходит X</div>
+              <div class="status" id="turnSub">...</div>
             </div>
-
-            <div class="goalRow">
-              <select id="selGoalInGame" class="goalSelect"></select>
-              <div class="statusPill" id="statusPill">● Идёт игра</div>
-            </div>
-
-            <div class="controlRow">
-              <button class="ctrlBtn" id="btnUndo" type="button">↩ Отменить</button>
-              <button class="ctrlBtn" id="btnRestart" type="button">⟲ Заново</button>
-              <!-- КНОПКА МЕНЮ УБРАНА ПО ТВОЕМУ ТРЕБОВАНИЮ -->
-            </div>
+            <button class="btn btnSec" id="btnExit" style="padding: 8px 16px; font-size:14px;">Выйти</button>
           </div>
 
-          <div class="boardCard">
+          <div class="board-frame">
             <div class="board" id="board"></div>
           </div>
+
+          <div style="display:flex; gap:12px; margin-top:20px;">
+            <button class="btn btnSec" id="btnUndo" style="flex:1;">↩ Отмена</button>
+            <button class="btn btnSec" id="btnRestart" style="flex:1;">⟲ Заново</button>
+          </div>
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- MODAL -->
   <div class="modalBack" id="modalBack">
     <div class="modal">
-      <div class="modalTitle" id="modalTitle">Подтвердить</div>
-      <div class="modalText" id="modalText">Текст</div>
+      <div class="modalTitle" id="modalTitle">Заголовок</div>
+      <div class="modalText" id="modalText">Текст сообщения</div>
       <div class="modalBtns">
-        <button class="btn btnPlain" id="modalCancel" type="button">Отмена</button>
-        <button class="btn btnSave" id="modalOk" type="button">Ок</button>
+        <button class="btnModal btnCancel" id="modalCancel">Отмена</button>
+        <button class="btnModal btnOk" id="modalOk">ОК</button>
       </div>
     </div>
   </div>
-
-  <!-- TOAST -->
-  <div class="toast" id="toast">OK</div>
+  
+  <div class="toast" id="toast">Сохранено</div>
 
 <script>
-  const BUILD = "2025.12.22.5"; // <- меняй число при каждом апдейте (для Telegram)
-
-  // принудительный query v=BUILD (чтобы обновления чаще подтягивались)
-  (function(){
-    try{
-      const u = new URL(location.href);
-      const v = u.searchParams.get("v");
-      if(v !== BUILD){
-        if(sessionStorage.getItem("forcedV") !== BUILD){
-          sessionStorage.setItem("forcedV", BUILD);
-          u.searchParams.set("v", BUILD);
-          location.replace(u.toString());
-        }
-      }
-    }catch(e){}
-  })();
+  const BUILD = "2026.01.20.Liquid.Fix3";
 
   const I18N = {
     ru: {
       home:"Главная", settings:"Настройки", start:"Начать игру", save:"Сохранить",
-      hint:"Сохрани — и нажми “Начать игру”",
       applied:"Настройки применены",
       lang:"Язык", theme:"Тема", mode:"Режим", size:"Размер поля", goal:"Цель (в ряд)", ai:"Сложность ИИ",
-      p1:"Игрок 1 (X)", p2:"Игрок 2 (O)", p3:"Игрок 3 (△)", p4:"Игрок 4 (□)",
-      modePVP:"Игрок vs Игрок", modeAI:"Игрок vs ИИ", mode3:"3 игрока", mode4:"4 игрока",
-      exit:"× Выйти", undo:"↩ Отменить", restart:"⟲ Заново",
-      turn:(n,s)=>`Ходит: ${n} (${s})`,
-      sub:(sz,g)=>`${sz}×${sz} · Цель (в ряд): ${g}`,
-      play:"● Идёт игра", win:"★ Победа", draw:"■ Ничья",
-      confirmNew:"Это начнёт новую игру. Продолжить?",
-      confirmExit:"Выйти в меню? Партия будет потеряна.",
-      confirmGoal:"Менять цель во время партии нельзя без перезапуска. Начать новую игру с новой целью?",
-      ok:"Ок", cancel:"Отмена",
-      goalShort:"Цель:"
+      aiEasy:"Лёгкая (Ошибается)", aiNormal:"Нормальная", aiHard:"Сложная", aiExpert:"Непобедимый",
+      p1:"Игрок 1", p2:"Игрок 2", p3:"Игрок 3", p4:"Игрок 4",
+      modePVP:"1 vs 1", modeAI:"1 vs AI", mode3:"3 Игрока", mode4:"4 Игрока",
+      exit:"Выйти", undo:"Отмена", restart:"Заново",
+      turn:(n,s)=>`Ход: ${n}`,
+      sub:(sz,g)=>`${sz}×${sz} • Цель: ${g}`,
+      play:"Игра идёт", win:"Победа!", draw:"Ничья",
+      confirmExit:"Выйти в меню?", confirmNew:"Начать заново?",
+      ok:"Да", cancel:"Нет"
     },
     en: {
-      home:"Home", settings:"Settings", start:"Start game", save:"Save",
-      hint:"Save — then press “Start game”",
-      applied:"Settings applied",
-      lang:"Language", theme:"Theme", mode:"Mode", size:"Board size", goal:"Goal (in a row)", ai:"AI difficulty",
-      p1:"Player 1 (X)", p2:"Player 2 (O)", p3:"Player 3 (△)", p4:"Player 4 (□)",
-      modePVP:"Player vs Player", modeAI:"Player vs AI", mode3:"3 players", mode4:"4 players",
-      exit:"× Exit", undo:"↩ Undo", restart:"⟲ Restart",
-      turn:(n,s)=>`Turn: ${n} (${s})`,
-      sub:(sz,g)=>`${sz}×${sz} · Goal: ${g}`,
-      play:"● Playing", win:"★ Win", draw:"■ Draw",
-      confirmNew:"This will start a new game. Continue?",
-      confirmExit:"Exit to menu? Current match will be lost.",
-      confirmGoal:"Changing goal requires restart. Start a new game with the new goal?",
-      ok:"OK", cancel:"Cancel",
-      goalShort:"Goal:"
+      home:"Home", settings:"Settings", start:"Start", save:"Save",
+      applied:"Applied",
+      lang:"Language", theme:"Theme", mode:"Mode", size:"Size", goal:"Goal", ai:"AI Level",
+      aiEasy:"Easy (Mistakes)", aiNormal:"Normal", aiHard:"Hard", aiExpert:"Unbeatable",
+      p1:"Player 1", p2:"Player 2", p3:"Player 3", p4:"Player 4",
+      modePVP:"1 vs 1", modeAI:"1 vs AI", mode3:"3 Players", mode4:"4 Players",
+      exit:"Exit", undo:"Undo", restart:"Restart",
+      turn:(n,s)=>`Turn: ${n}`,
+      sub:(sz,g)=>`${sz}×${sz} • Goal: ${g}`,
+      play:"Playing", win:"Winner!", draw:"Draw",
+      confirmExit:"Exit to menu?", confirmNew:"Restart game?",
+      ok:"Yes", cancel:"No"
     },
     uz: {
-      home:"Bosh sahifa", settings:"Sozlamalar", start:"O‘yinni boshlash", save:"Saqlash",
-      hint:"Saqlang — so‘ng “O‘yinni boshlash” ni bosing",
-      applied:"Sozlamalar qo‘llandi",
-      lang:"Til", theme:"Mavzu", mode:"Rejim", size:"Maydon o‘lchami", goal:"Maqsad (qator bo‘ylab)", ai:"AI qiyinligi",
-      p1:"1-o‘yinchi (X)", p2:"2-o‘yinchi (O)", p3:"3-o‘yinchi (△)", p4:"4-o‘yinchi (□)",
-      modePVP:"O‘yinchi vs O‘yinchi", modeAI:"O‘yinchi vs AI", mode3:"3 o‘yinchi", mode4:"4 o‘yinchi",
-      exit:"× Chiqish", undo:"↩ Bekor qilish", restart:"⟲ Qayta",
-      turn:(n,s)=>`Navbat: ${n} (${s})`,
-      sub:(sz,g)=>`${sz}×${sz} · Maqsad: ${g}`,
-      play:"● O‘yin ketmoqda", win:"★ G‘alaba", draw:"■ Durang",
-      confirmNew:"Bu yangi o‘yinni boshlaydi. Davom etamizmi?",
-      confirmExit:"Menyuga chiqilsinmi? Joriy o‘yin yo‘qoladi.",
-      confirmGoal:"Maqsadni o‘zgartirish uchun qayta boshlash kerak. Yangi maqsad bilan yangi o‘yin boshlansinmi?",
-      ok:"OK", cancel:"Bekor",
-      goalShort:"Maqsad:"
+      home:"Bosh sahifa", settings:"Sozlamalar", start:"Boshlash", save:"Saqlash",
+      applied:"Saqlandi",
+      lang:"Til", theme:"Mavzu", mode:"Rejim", size:"O‘lcham", goal:"Maqsad", ai:"AI Darajasi",
+      aiEasy:"Oson (Xato qiladi)", aiNormal:"O‘rta", aiHard:"Qiyin", aiExpert:"Yengilmas",
+      p1:"1-o‘yinchi", p2:"2-o‘yinchi", p3:"3-o‘yinchi", p4:"4-o‘yinchi",
+      modePVP:"1 vs 1", modeAI:"1 vs AI", mode3:"3 Kishi", mode4:"4 Kishi",
+      exit:"Chiqish", undo:"Bekor", restart:"Qayta",
+      turn:(n,s)=>`Navbat: ${n}`,
+      sub:(sz,g)=>`${sz}×${sz} • Maqsad: ${g}`,
+      play:"O‘yin", win:"G‘alaba!", draw:"Durang",
+      confirmExit:"Chiqasizmi?", confirmNew:"Qayta boshlash?",
+      ok:"Ha", cancel:"Yo‘q"
     }
   };
 
@@ -690,626 +539,439 @@
     {id:"p3",  key:"mode3",   players:3, ai:false},
     {id:"p4",  key:"mode4",   players:4, ai:false}
   ];
+  
+  const AI_LEVELS = [
+    {id:"easy", key:"aiEasy"},
+    {id:"normal", key:"aiNormal"},
+    {id:"hard", key:"aiHard"},
+    {id:"expert", key:"aiExpert"}
+  ];
+
   const SYMBOLS = ["X","O","△","□"];
 
-  const storeKey = "ttt_settings_v4";
-  const gameKey  = "ttt_game_v4";
+  const storeKey = "ttt_settings_liquid";
+  const gameKey  = "ttt_game_liquid";
 
   const $ = id => document.getElementById(id);
-
   const screenHome = $("screenHome");
   const screenSettings = $("screenSettings");
   const screenGame = $("screenGame");
 
-  const homeKicker = $("homeKicker");
-  const homeMeta = $("homeMeta");
-  const btnStart = $("btnStart");
-  const btnStartText = $("btnStartText");
-
-  const tabHome = $("tabHome");
-  const tabSettings = $("tabSettings");
-  const tabHome2 = $("tabHome2");
-  const tabSettings2 = $("tabSettings2");
-  const tabHomeText = $("tabHomeText");
-  const tabSettingsText = $("tabSettingsText");
-  const tabHomeText2 = $("tabHomeText2");
-  const tabSettingsText2 = $("tabSettingsText2");
-
-  const settingsTitle = $("settingsTitle");
-  const settingsHint = $("settingsHint");
-  const lblLang = $("lblLang");
-  const lblTheme = $("lblTheme");
-  const lblMode = $("lblMode");
-  const lblSize = $("lblSize");
-  const lblGoal = $("lblGoal");
-  const lblAI = $("lblAI");
-  const lblP1 = $("lblP1");
-  const lblP2 = $("lblP2");
-  const lblP3 = $("lblP3");
-  const lblP4 = $("lblP4");
-
-  const selLang = $("selLang");
-  const selTheme = $("selTheme");
-  const modeChips = $("modeChips");
-  const selSize = $("selSize");
-  const selGoal = $("selGoal");
-  const aiRow = $("aiRow");
-  const selAI = $("selAI");
-  const inpP1 = $("inpP1");
-  const inpP2 = $("inpP2");
-  const inpP3 = $("inpP3");
-  const inpP4 = $("inpP4");
-  const nameGrid34 = $("nameGrid34");
-
-  const btnSave = $("btnSave");
-  const btnSaveText = $("btnSaveText");
-  const buildText = $("buildText");
-
-  const turnTitle = $("turnTitle");
-  const turnSub = $("turnSub");
-  const btnExit = $("btnExit");
-  const selGoalInGame = $("selGoalInGame");
-  const statusPill = $("statusPill");
-  const btnUndo = $("btnUndo");
-  const btnRestart = $("btnRestart");
-  const boardEl = $("board");
-
-  const modalBack = $("modalBack");
-  const modalTitle = $("modalTitle");
-  const modalText = $("modalText");
-  const modalCancel = $("modalCancel");
-  const modalOk = $("modalOk");
-  let modalResolve = null;
-
-  const toast = $("toast");
-  let toastTimer = null;
-
   let settings = loadSettings();
   let board = [];
   let history = [];
-  let lastMoveIdx = null;
-  let winLine = [];
   let gameOver = false;
+  let winLine = [];
 
-  function showToast(msg){
-    toast.textContent = msg;
-    toast.classList.add("on");
-    if(toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=> toast.classList.remove("on"), 1100);
-  }
-
-  function loadSettings(){
-    try{
-      const raw = localStorage.getItem(storeKey);
-      if(raw){
-        const s = JSON.parse(raw);
-        return {
-          lang: s.lang || "ru",
-          theme: s.theme || "light",
-          mode: s.mode || "pvp",
-          size: clamp(s.size,3,10,8),
-          goal: clamp(s.goal,3,10,5),
-          ai: s.ai || "expert",
-          p1: s.p1 || "Alex",
-          p2: s.p2 || "Player 2",
-          p3: s.p3 || "Player 3",
-          p4: s.p4 || "Player 4"
-        };
+  function init(){
+    applyTheme();
+    renderUI();
+    
+    $("btnStart").onclick = startNewGame;
+    $("tabHome").onclick = ()=>go("home");
+    $("tabSettings").onclick = ()=>go("settings");
+    $("tabHome2").onclick = ()=>go("home");
+    $("tabSettings2").onclick = ()=>go("settings");
+    
+    $("btnSave").onclick = saveAndApply;
+    
+    // При смене языка сразу обновляем UI
+    $("selLang").onchange = ()=>{ 
+       settings.lang = $("selLang").value; 
+       renderUI(); 
+       syncSettingsForm(); // Обновляем списки (режимы, ИИ) на новом языке
+    };
+    $("selTheme").onchange = ()=>{ settings.theme = $("selTheme").value; applyTheme(); };
+    $("selSize").onchange = rebuildGoalSelect;
+    
+    $("btnExit").onclick = async ()=>{
+      if(await modalConfirm(I18N[settings.lang].confirmExit)) {
+        board=[]; gameOver=false; saveGame(); go("home");
       }
-    }catch(e){}
-    return {lang:"ru",theme:"light",mode:"pvp",size:8,goal:5,ai:"expert",p1:"Alex",p2:"Player 2",p3:"Player 3",p4:"Player 4"};
-  }
-  function saveSettings(){ localStorage.setItem(storeKey, JSON.stringify(settings)); }
-
-  function applyTheme(){
-    document.documentElement.setAttribute("data-theme", settings.theme);
-  }
-
-  function getMode(){ return MODES.find(m=>m.id===settings.mode) || MODES[0]; }
-  function playerName(i){
-    if(i===0) return settings.p1 || "Player 1";
-    if(i===1) return settings.mode==="ai" ? (settings.p2 || "Bot") : (settings.p2 || "Player 2");
-    if(i===2) return settings.p3 || "Player 3";
-    return settings.p4 || "Player 4";
-  }
-  function safeName(s){ return (s||"").trim().slice(0,16) || "Player"; }
-
-  function clamp(v,min,max,fallback){
-    const n = parseInt(v,10);
-    if(Number.isFinite(n)) return Math.max(min, Math.min(max, n));
-    return fallback;
+    };
+    $("btnRestart").onclick = async ()=>{
+       if(await modalConfirm(I18N[settings.lang].confirmNew)) startNewGame();
+    };
+    $("btnUndo").onclick = doUndo;
+    
+    const g = loadGame();
+    if(g && g.board.length > 0 && !g.gameOver){
+      board = g.board; history=g.history; gameOver=g.gameOver;
+      settings = g.settingsSnapshot;
+      renderGame();
+      go("game");
+    } else {
+      go("home");
+    }
   }
 
-  function go(screen){
-    screenHome.classList.toggle("hidden", screen!=="home");
-    screenSettings.classList.toggle("hidden", screen!=="settings");
-    screenGame.classList.toggle("hidden", screen!=="game");
-  }
+  function go(scr){
+    screenHome.classList.add("hidden");
+    screenSettings.classList.add("hidden");
+    screenGame.classList.add("hidden");
+    
+    $("tabHome").classList.remove("tabOn");
+    $("tabSettings").classList.remove("tabOn");
+    $("tabHome2").classList.remove("tabOn");
+    $("tabSettings2").classList.remove("tabOn");
 
-  function renderAllTexts(){
-    const t = I18N[settings.lang];
-
-    homeKicker.textContent = t.home;
-    btnStartText.textContent = t.start;
-
-    tabHomeText.textContent = t.home;
-    tabSettingsText.textContent = t.settings;
-    tabHomeText2.textContent = t.home;
-    tabSettingsText2.textContent = t.settings;
-
-    settingsTitle.textContent = t.settings;
-    settingsHint.textContent = t.hint;
-    lblLang.textContent = t.lang;
-    lblTheme.textContent = t.theme;
-    lblMode.textContent = t.mode;
-    lblSize.textContent = t.size;
-    lblGoal.textContent = t.goal;
-    lblAI.textContent = t.ai;
-    lblP1.textContent = t.p1;
-    lblP2.textContent = t.p2;
-    lblP3.textContent = t.p3;
-    lblP4.textContent = t.p4;
-
-    btnSaveText.textContent = t.save;
-    buildText.textContent = `build ${BUILD}`;
-
-    btnExit.textContent = t.exit;
-    btnUndo.textContent = t.undo;
-    btnRestart.textContent = t.restart;
-
-    renderHomeMeta();
-    renderGameHeader();
-    rebuildGoalInGameOptions();
+    if(scr==="home"){
+       screenHome.classList.remove("hidden");
+       $("tabHome").classList.add("tabOn");
+       $("tabHome2").classList.add("tabOn");
+       renderHomeMeta();
+    }
+    if(scr==="settings"){
+       screenSettings.classList.remove("hidden");
+       $("tabSettings").classList.add("tabOn");
+       $("tabSettings2").classList.add("tabOn");
+       syncSettingsForm();
+    }
+    if(scr==="game"){
+       screenGame.classList.remove("hidden");
+    }
   }
 
   function renderHomeMeta(){
     const t = I18N[settings.lang];
-    const modeName = t[getMode().key];
-    const names = (() => {
-      const m = getMode();
-      const arr = [];
-      arr.push(`${safeName(playerName(0))} (${SYMBOLS[0]})`);
-      arr.push(`${safeName(playerName(1))} (${SYMBOLS[1]})`);
-      if(m.players>=3) arr.push(`${safeName(playerName(2))} (${SYMBOLS[2]})`);
-      if(m.players>=4) arr.push(`${safeName(playerName(3))} (${SYMBOLS[3]})`);
-      return arr.join(", ");
-    })();
-    homeMeta.textContent = `${modeName} · ${settings.size}×${settings.size} · ${t.goal}: ${settings.goal} ${names}`;
+    const m = MODES.find(x=>x.id===settings.mode);
+    const modeTxt = t[m.key];
+    $("homeMeta").textContent = `${modeTxt} • ${settings.size}x${settings.size}`;
   }
 
-  function applySettingsToForm(){
-    selLang.value = settings.lang;
-    selTheme.value = settings.theme;
-    selAI.value = settings.ai;
-
-    // sizes 3..10
-    selSize.innerHTML = "";
-    for(let s=3; s<=10; s++){
-      const o = document.createElement("option");
-      o.value = String(s);
-      o.textContent = `${s}×${s}`;
-      selSize.appendChild(o);
-    }
-    selSize.value = String(settings.size);
-
-    // mode chips
-    modeChips.innerHTML = "";
+  function syncSettingsForm(){
+    $("selLang").value = settings.lang;
+    $("selTheme").value = settings.theme;
+    
+    // Chips (Modes) - пересоздаем, чтобы обновить язык
+    const chipsDiv = $("modeChips");
+    chipsDiv.innerHTML = "";
     const t = I18N[settings.lang];
-    MODES.forEach(m=>{
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "chip" + (m.id===settings.mode ? " chipOn":"");
-      chip.textContent = t[m.key];
-      chip.addEventListener("click", ()=>{
-        settings.mode = m.id;
-        if(settings.mode==="ai" && (!inpP2.value.trim())) inpP2.value = "Bot";
-        saveSettings();
-        applySettingsToForm();
-        renderAllTexts();
-      });
-      modeChips.appendChild(chip);
+    MODES.forEach(m => {
+      const b = document.createElement("div");
+      b.className = "chip" + (settings.mode===m.id ? " chipOn" : "");
+      b.textContent = t[m.key];
+      b.onclick = ()=>{ settings.mode=m.id; syncSettingsForm(); };
+      chipsDiv.appendChild(b);
     });
 
-    // goal options 3..size
-    settings.goal = clamp(settings.goal, 3, settings.size, Math.min(5, settings.size));
+    // Size
+    const selSize = $("selSize");
+    // Не пересоздаем, если уже есть опции, но select value нужно обновить
+    if(selSize.options.length === 0) {
+        for(let i=3; i<=10; i++) {
+           const opt = document.createElement("option");
+           opt.value=i; opt.textContent=`${i}x${i}`;
+           selSize.appendChild(opt);
+        }
+    }
+    selSize.value = settings.size;
+    rebuildGoalSelect();
+    
+    // AI Options - пересоздаем для перевода
+    const selAI = $("selAI");
+    selAI.innerHTML = "";
+    AI_LEVELS.forEach(lvl => {
+        const opt = document.createElement("option");
+        opt.value = lvl.id;
+        opt.textContent = t[lvl.key];
+        selAI.appendChild(opt);
+    });
+    selAI.value = settings.ai;
+
+    $("aiRow").style.display = (settings.mode==="ai") ? "block" : "none";
+
+    // Inputs
+    $("inpP1").value = settings.p1;
+    $("inpP2").value = settings.p2;
+    $("inpP3").value = settings.p3;
+    $("inpP4").value = settings.p4;
+    $("nameGrid34").style.display = (settings.mode==="p3" || settings.mode==="p4") ? "grid" : "none";
+  }
+
+  function rebuildGoalSelect(){
+    const sz = parseInt($("selSize").value);
+    const selGoal = $("selGoal");
     selGoal.innerHTML = "";
-    for(let g=3; g<=settings.size; g++){
-      const o = document.createElement("option");
-      o.value = String(g);
-      o.textContent = String(g);
-      selGoal.appendChild(o);
+    
+    // ВОЗВРАЩЕНО: Цель от 3 до размера поля (без ограничений)
+    for(let i=3; i<=sz; i++){
+       const opt = document.createElement("option");
+       opt.value=i; opt.textContent=i;
+       selGoal.appendChild(opt);
     }
-    selGoal.value = String(settings.goal);
-
-    aiRow.style.display = (settings.mode==="ai") ? "grid" : "none";
-
-    inpP1.value = settings.p1;
-    inpP2.value = settings.p2;
-    inpP3.value = settings.p3;
-    inpP4.value = settings.p4;
-
-    nameGrid34.style.display = (settings.mode==="p3" || settings.mode==="p4") ? "grid" : "none";
-    inpP2.placeholder = (settings.mode==="ai") ? "Bot" : "Player 2";
+    
+    // Пытаемся сохранить текущее значение, если оно валидно
+    if(settings.goal <= sz && settings.goal >= 3) selGoal.value = settings.goal;
+    else selGoal.value = Math.min(sz, 5); // дефолт
   }
 
-  function rebuildGoalInGameOptions(){
-    const t = I18N[settings.lang];
-    selGoalInGame.innerHTML = "";
-    for(let g=3; g<=settings.size; g++){
-      const o = document.createElement("option");
-      o.value = String(g);
-      o.textContent = `${t.goalShort} ${g}`;
-      selGoalInGame.appendChild(o);
-    }
-    selGoalInGame.value = String(settings.goal);
-  }
-
-  function renderGameHeader(){
-    const t = I18N[settings.lang];
-    if(!board.length) return;
-
-    if(gameOver){
-      const res = checkWin(board, settings.size, settings.goal);
-      if(res.win){
-        const winner = SYMBOLS.indexOf(res.sym);
-        turnTitle.textContent = t.turn(safeName(playerName(winner)), res.sym);
-        statusPill.textContent = t.win;
-      }else{
-        turnTitle.textContent = t.draw;
-        statusPill.textContent = t.draw;
-      }
-    }else{
-      const p = history.length % getMode().players;
-      turnTitle.textContent = t.turn(safeName(playerName(p)), SYMBOLS[p]);
-      statusPill.textContent = t.play;
+  function saveAndApply(){
+    settings.lang = $("selLang").value;
+    settings.theme = $("selTheme").value;
+    
+    const chips = $("modeChips").children;
+    for(let i=0; i<chips.length; i++){
+       if(chips[i].classList.contains("chipOn")) settings.mode = MODES[i].id;
     }
 
-    turnSub.textContent = t.sub(settings.size, settings.goal);
-    btnUndo.disabled = history.length === 0;
+    settings.size = parseInt($("selSize").value);
+    settings.goal = parseInt($("selGoal").value);
+    settings.ai = $("selAI").value;
+    
+    settings.p1 = $("inpP1").value.trim() || "Player 1";
+    settings.p2 = $("inpP2").value.trim() || "Player 2";
+    settings.p3 = $("inpP3").value.trim() || "Player 3";
+    settings.p4 = $("inpP4").value.trim() || "Player 4";
+
+    saveSettings();
+    renderUI();
+    showToast(I18N[settings.lang].applied);
   }
 
   function startNewGame(){
-    board = new Array(settings.size * settings.size).fill("");
+    board = Array(settings.size*settings.size).fill("");
     history = [];
-    lastMoveIdx = null;
-    winLine = [];
     gameOver = false;
-
-    localStorage.setItem(gameKey, JSON.stringify({
-      version: BUILD,
-      settingsSnapshot: {...settings},
-      board, history, lastMoveIdx, winLine, gameOver
-    }));
-
-    rebuildGoalInGameOptions();
-    renderGameHeader();
-    renderBoard();
+    winLine = [];
+    saveGame();
+    renderGame();
     go("game");
   }
 
-  function loadGame(){
-    try{
-      const raw = localStorage.getItem(gameKey);
-      if(!raw) return null;
-      const g = JSON.parse(raw);
-      if(g.version !== BUILD) return null;
-      if(g.settingsSnapshot) settings = {...settings, ...g.settingsSnapshot};
-      board = g.board || [];
-      history = g.history || [];
-      lastMoveIdx = g.lastMoveIdx ?? null;
-      winLine = g.winLine || [];
-      gameOver = !!g.gameOver;
-      return g;
-    }catch(e){ return null; }
-  }
+  function renderGame(){
+    const t = I18N[settings.lang];
+    const bEl = $("board");
+    
+    bEl.style.gridTemplateColumns = `repeat(${settings.size}, 1fr)`;
+    bEl.style.gridTemplateRows = `repeat(${settings.size}, 1fr)`;
+    
+    const gap = settings.size > 6 ? 4 : 8;
+    bEl.style.gap = gap + "px";
 
-  function saveGame(){
-    localStorage.setItem(gameKey, JSON.stringify({
-      version: BUILD,
-      settingsSnapshot: {...settings},
-      board, history, lastMoveIdx, winLine, gameOver
-    }));
-  }
-
-  function clearGame(){
-    localStorage.removeItem(gameKey);
-  }
-
-  function symClass(sym){
-    if(sym==="X") return "sym symX";
-    if(sym==="O") return "sym symO";
-    if(sym==="△") return "sym symT";
-    if(sym==="□") return "sym symS";
-    return "sym";
-  }
-
-  function renderBoard(){
-    const n = settings.size;
-    boardEl.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
-    boardEl.style.gridTemplateRows = `repeat(${n}, 1fr)`; /* ФИКС стаб. высоты рядов */
-
-    boardEl.innerHTML = "";
-
-    for(let i=0;i<board.length;i++){
-      const cell = document.createElement("button");
-      cell.type = "button";
-      cell.className = "cell";
-
-      const v = board[i];
-      if(v){
+    const fs = Math.max(16, 54 - settings.size * 3.5);
+    bEl.style.setProperty("--cell-fs", fs + "px");
+    
+    bEl.innerHTML = "";
+    
+    board.forEach((val, idx)=>{
+      const c = document.createElement("div");
+      c.className = "cell";
+      if(val){
         const sp = document.createElement("span");
-        sp.className = symClass(v);
-        sp.textContent = v;
-        cell.appendChild(sp);
-      }else{
-        cell.textContent = "";
+        sp.className = "sym sym"+val; 
+        sp.textContent = val;
+        c.appendChild(sp);
       }
+      if(winLine.includes(idx)) c.classList.add("cellWin");
+      if(gameOver || val) c.classList.add("cellDisabled");
+      
+      c.onclick = ()=>makeMove(idx);
+      bEl.appendChild(c);
+    });
 
-      if(lastMoveIdx === i) cell.classList.add("cellLast");
-      if(winLine.includes(i)) cell.classList.add("cellWin");
-
-      const disabled = gameOver || !!board[i];
-      if(disabled) cell.classList.add("cellDisabled");
-
-      cell.addEventListener("click", ()=>{
-        if(disabled) return;
-        makeMove(i);
-      });
-
-      boardEl.appendChild(cell);
+    const curP = history.length % getPlayersCount();
+    const pName = getPlayerName(curP);
+    
+    if(gameOver){
+       if(winLine.length) $("turnTitle").textContent = t.win + " " + getPlayerName(SYMBOLS.indexOf(board[winLine[0]]));
+       else $("turnTitle").textContent = t.draw;
+    } else {
+       $("turnTitle").textContent = t.turn(pName, SYMBOLS[curP]);
     }
+    $("turnSub").textContent = t.sub(settings.size, settings.goal);
+    
+    $("btnUndo").disabled = (history.length === 0 || gameOver);
+    $("btnUndo").style.opacity = $("btnUndo").disabled ? 0.5 : 1;
   }
 
   function makeMove(idx){
-    if(gameOver) return;
-    if(board[idx]) return;
-
-    const mode = getMode();
-    const p = history.length % mode.players;
-    board[idx] = SYMBOLS[p];
-    history.push({idx, player:p});
-    lastMoveIdx = idx;
-
-    const res = checkWin(board, settings.size, settings.goal);
-    if(res.win){
-      gameOver = true;
-      winLine = res.line;
-    }else if(history.length === board.length){
-      gameOver = true;
-      winLine = [];
-    }else{
-      winLine = [];
-    }
-
+    if(gameOver || board[idx]) return;
+    
+    const pIdx = history.length % getPlayersCount();
+    board[idx] = SYMBOLS[pIdx];
+    history.push({idx, p:pIdx});
+    
+    checkWinCondition();
     saveGame();
-    renderGameHeader();
-    renderBoard();
-
-    if(!gameOver && mode.ai){
-      const nextP = history.length % mode.players;
-      if(nextP === 1){
-        setTimeout(botMove, 90);
-      }
+    renderGame();
+    
+    if(!gameOver && settings.mode === "ai" && getPlayersCount()===2){
+       if( (history.length % 2) === 1 ){
+          setTimeout(botMove, 400);
+       }
     }
   }
 
   function botMove(){
     if(gameOver) return;
-    const empties = [];
-    for(let i=0;i<board.length;i++) if(!board[i]) empties.push(i);
+    const empties = board.map((v,i)=>v===""?i:-1).filter(i=>i!==-1);
     if(!empties.length) return;
 
-    const size = settings.size, goal = settings.goal;
-    const bot = "O", me = "X";
+    let move = -1;
+    let mistakeChance = 0;
+    if(settings.ai==="easy") mistakeChance=0.7;
+    if(settings.ai==="normal") mistakeChance=0.3;
+    if(settings.ai==="hard") mistakeChance=0.1;
 
-    // win
-    for(const idx of empties){
-      board[idx]=bot;
-      const r = checkWin(board,size,goal);
-      board[idx]="";
-      if(r.win){ makeMove(idx); return; }
+    if(Math.random() < mistakeChance){
+       move = empties[Math.floor(Math.random()*empties.length)];
+    } else {
+       move = findBestMove(empties);
     }
-    // block
-    for(const idx of empties){
-      board[idx]=me;
-      const r = checkWin(board,size,goal);
-      board[idx]="";
-      if(r.win){ makeMove(idx); return; }
+    
+    makeMove(move);
+  }
+  
+  function findBestMove(empties){
+    const me = SYMBOLS[1];
+    const en = SYMBOLS[0];
+    const sz=settings.size, gl=settings.goal;
+
+    for(let i of empties){
+      board[i]=me; 
+      if(checkWinSimple(board, sz, gl)) { board[i]=""; return i; }
+      board[i]="";
     }
-    // simple heuristic: center preference
-    let best = empties[0], bestScore = -1e9;
-    const center = (size-1)/2;
-    for(const idx of empties){
-      const r = Math.floor(idx/size), c = idx%size;
-      let sc = -(Math.abs(r-center)+Math.abs(c-center));
-      if(sc>bestScore){ bestScore=sc; best=idx; }
+    for(let i of empties){
+      board[i]=en;
+      if(checkWinSimple(board, sz, gl)) { board[i]=""; return i; }
+      board[i]="";
     }
-    makeMove(best);
+    const center = (sz-1)/2;
+    empties.sort((a,b)=>{
+       const ra = Math.floor(a/sz), ca = a%sz;
+       const rb = Math.floor(b/sz), cb = b%sz;
+       const da = Math.abs(ra-center)+Math.abs(ca-center);
+       const db = Math.abs(rb-center)+Math.abs(cb-center);
+       return da-db;
+    });
+    return empties[0];
   }
 
   function doUndo(){
     if(!history.length) return;
-
-    const mode = getMode();
-    if(gameOver){ gameOver=false; winLine=[]; }
-
-    const popOne = ()=>{
-      const last = history.pop();
-      if(!last) return;
-      board[last.idx] = "";
-      lastMoveIdx = history.length ? history[history.length-1].idx : null;
-    };
-
-    popOne();
-    if(mode.ai){
-      if(history.length && history[history.length-1].player === 1) popOne();
+    const last = history.pop();
+    board[last.idx] = "";
+    
+    if(settings.mode==="ai" && history.length>0){
+       const last2 = history.pop();
+       board[last2.idx] = "";
     }
-
-    const res = checkWin(board, settings.size, settings.goal);
-    if(res.win){ gameOver=true; winLine=res.line; }
-    else { gameOver=false; winLine=[]; }
-
+    
+    gameOver=false; winLine=[];
     saveGame();
-    renderGameHeader();
-    renderBoard();
+    renderGame();
   }
 
-  function checkWin(b,size,goal){
-    const dirs=[[1,0],[0,1],[1,1],[1,-1]];
-    for(let r=0;r<size;r++){
-      for(let c=0;c<size;c++){
-        const start = b[r*size+c];
-        if(!start) continue;
-        for(const [dr,dc] of dirs){
-          const endR = r + dr*(goal-1);
-          const endC = c + dc*(goal-1);
-          if(endR<0||endR>=size||endC<0||endC>=size) continue;
-
-          let ok=true;
-          const line=[];
-          for(let k=0;k<goal;k++){
-            const rr=r+dr*k, cc=c+dc*k;
-            const v=b[rr*size+cc];
-            if(v!==start){ ok=false; break; }
-            line.push(rr*size+cc);
-          }
-          if(ok) return {win:true, sym:start, line};
-        }
-      }
+  function checkWinCondition(){
+    const res = checkWinFull(board, settings.size, settings.goal);
+    if(res.win){
+       gameOver=true; winLine=res.line;
+    } else if(history.length === settings.size*settings.size){
+       gameOver=true;
     }
-    return {win:false, sym:"", line:[]};
   }
 
-  function modalConfirm(text, title){
-    const t = I18N[settings.lang];
-    modalTitle.textContent = title || "";
-    modalText.textContent = text || "";
-    modalCancel.textContent = t.cancel;
-    modalOk.textContent = t.ok;
-    modalBack.classList.add("on");
-    return new Promise(res=>modalResolve=res);
+  function getPlayersCount(){
+     return MODES.find(m=>m.id===settings.mode).players;
   }
-  function closeModal(ok){
-    modalBack.classList.remove("on");
-    if(modalResolve){ modalResolve(!!ok); modalResolve=null; }
+  function getPlayerName(idx){
+     if(idx===0) return settings.p1;
+     if(idx===1) return settings.p2;
+     if(idx===2) return settings.p3;
+     if(idx===3) return settings.p4;
+     return "Player";
   }
 
-  // EVENTS
-  tabHome.addEventListener("click", ()=>{ go("home"); });
-  tabHome2.addEventListener("click", ()=>{ go("home"); });
-
-  tabSettings.addEventListener("click", ()=>{ go("settings"); });
-  tabSettings2.addEventListener("click", ()=>{ go("settings"); });
-
-  btnStart.addEventListener("click", ()=> startNewGame());
-
-  btnSave.addEventListener("click", ()=>{
-    settings.lang = selLang.value;
-    settings.theme = selTheme.value;
-    settings.size = clamp(selSize.value,3,10,8);
-    settings.goal = clamp(selGoal.value,3,settings.size, Math.min(5, settings.size));
-    settings.ai = selAI.value;
-
-    settings.p1 = safeName(inpP1.value || "Alex");
-    settings.p2 = safeName(inpP2.value || (settings.mode==="ai" ? "Bot" : "Player 2"));
-    settings.p3 = safeName(inpP3.value || "Player 3");
-    settings.p4 = safeName(inpP4.value || "Player 4");
-
-    saveSettings();
-    applyTheme();
-    applySettingsToForm();
-    renderAllTexts();
-
-    /* уведомление после сохранения (добавлено) */
-    showToast(I18N[settings.lang].applied);
-  });
-
-  selLang.addEventListener("change", ()=>{
-    settings.lang = selLang.value;
-    saveSettings();
-    applySettingsToForm();
-    renderAllTexts();
-  });
-
-  selTheme.addEventListener("change", ()=>{
-    settings.theme = selTheme.value;
-    saveSettings();
-    applyTheme();
-    renderAllTexts();
-  });
-
-  selSize.addEventListener("change", ()=>{
-    settings.size = clamp(selSize.value,3,10,8);
-    settings.goal = clamp(settings.goal,3,settings.size, Math.min(5, settings.size));
-    saveSettings();
-    applySettingsToForm();
-    renderAllTexts();
-  });
-
-  selGoal.addEventListener("change", ()=>{
-    settings.goal = clamp(selGoal.value,3,settings.size, Math.min(5, settings.size));
-    saveSettings();
-    rebuildGoalInGameOptions();
-    renderAllTexts();
-  });
-
-  selGoalInGame.addEventListener("change", async ()=>{
-    const newGoal = clamp(selGoalInGame.value,3,settings.size,settings.goal);
-    if(newGoal === settings.goal) return;
-
-    const t = I18N[settings.lang];
-    if(history.length === 0){
-      settings.goal = newGoal;
-      saveSettings();
-      rebuildGoalInGameOptions();
-      renderAllTexts();
-      return;
-    }
-    const ok = await modalConfirm(t.confirmGoal, t.goal);
-    if(ok){
-      settings.goal = newGoal;
-      saveSettings();
-      startNewGame();
-    }else{
-      selGoalInGame.value = String(settings.goal);
-    }
-  });
-
-  btnExit.addEventListener("click", async ()=>{
-    const t = I18N[settings.lang];
-    const ok = await modalConfirm(t.confirmExit, t.exit);
-    if(ok){
-      clearGame();
-      go("home");
-    }
-  });
-
-  btnRestart.addEventListener("click", async ()=>{
-    const t = I18N[settings.lang];
-    const ok = await modalConfirm(t.confirmNew, t.restart);
-    if(ok) startNewGame();
-  });
-
-  btnUndo.addEventListener("click", ()=> doUndo());
-
-  modalCancel.addEventListener("click", ()=> closeModal(false));
-  modalOk.addEventListener("click", ()=> closeModal(true));
-  modalBack.addEventListener("click", (e)=>{ if(e.target===modalBack) closeModal(false); });
-
-  // INIT
-  applyTheme();
-  applySettingsToForm();
-  renderAllTexts();
-
-  const g = loadGame();
-  if(g && board.length){
-    rebuildGoalInGameOptions();
-    renderGameHeader();
-    renderBoard();
-    go("game");
-  }else{
-    go("home");
+  function checkWinFull(b, sz, goal){
+     const dirs = [[1,0], [0,1], [1,1], [1,-1]];
+     for(let r=0; r<sz; r++){
+       for(let c=0; c<sz; c++){
+         const start = b[r*sz+c];
+         if(!start) continue;
+         for(let d of dirs){
+           let line = [];
+           for(let k=0; k<goal; k++){
+             const nr = r + d[0]*k;
+             const nc = c + d[1]*k;
+             if(nr<0||nr>=sz||nc<0||nc>=sz) break;
+             if(b[nr*sz+nc] === start) line.push(nr*sz+nc);
+             else break;
+           }
+           if(line.length === goal) return {win:true, line:line};
+         }
+       }
+     }
+     return {win:false};
   }
+  function checkWinSimple(b, sz, goal){ return checkWinFull(b,sz,goal).win; }
+
+  function loadSettings(){
+    try{
+      const s = JSON.parse(localStorage.getItem(storeKey));
+      if(s) return {...defaultSettings(), ...s};
+    }catch(e){}
+    return defaultSettings();
+  }
+  function defaultSettings(){
+    return {lang:"ru", theme:"light", mode:"pvp", size:3, goal:3, ai:"expert", p1:"Игрок 1", p2:"Игрок 2", p3:"Игрок 3", p4:"Игрок 4"};
+  }
+  function saveSettings(){ localStorage.setItem(storeKey, JSON.stringify(settings)); }
+  
+  function loadGame(){
+    try{ return JSON.parse(localStorage.getItem(gameKey)); }catch(e){ return null; }
+  }
+  function saveGame(){
+    localStorage.setItem(gameKey, JSON.stringify({version:BUILD, settingsSnapshot:settings, board, history, gameOver}));
+  }
+
+  function renderUI(){
+     const t = I18N[settings.lang];
+     $("btnStart").innerHTML = "▶ " + t.start;
+     $("tabHome").textContent = t.home;
+     $("tabSettings").textContent = t.settings;
+     $("tabHome2").textContent = t.home;
+     $("tabSettings2").textContent = t.settings;
+     $("lblLang").textContent = t.lang;
+     $("lblTheme").textContent = t.theme;
+     $("lblMode").textContent = t.mode;
+     $("lblSize").textContent = t.size;
+     $("lblGoal").textContent = t.goal;
+     $("lblAI").textContent = t.ai;
+     
+     $("inpP1").placeholder = t.p1;
+     $("inpP2").placeholder = t.p2;
+     $("inpP3").placeholder = t.p3;
+     $("inpP4").placeholder = t.p4;
+     
+     $("btnSave").textContent = t.save;
+     
+     renderHomeMeta();
+  }
+  
+  function applyTheme(){
+     document.documentElement.setAttribute("data-theme", settings.theme);
+  }
+
+  function showToast(msg){
+     const t = $("toast");
+     t.textContent = msg;
+     t.classList.add("on");
+     setTimeout(()=>t.classList.remove("on"), 2000);
+  }
+
+  function modalConfirm(txt){
+     return new Promise(resolve=>{
+        $("modalText").textContent = txt;
+        $("modalBack").classList.add("on");
+        $("modalOk").onclick = ()=>{ $("modalBack").classList.remove("on"); resolve(true); };
+        $("modalCancel").onclick = ()=>{ $("modalBack").classList.remove("on"); resolve(false); };
+     });
+  }
+
+  init();
+
 </script>
 </body>
 </html>
