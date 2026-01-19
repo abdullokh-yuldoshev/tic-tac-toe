@@ -42,6 +42,10 @@
       --symO: #FF9500;
       --symT: #AF52DE;
       --symS: #30B0C7;
+
+      /* Анимации */
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     [data-theme="dark"]{
@@ -63,6 +67,17 @@
       --symO: #FF9F0A;
       --symT: #BF5AF2;
       --symS: #64D2FF;
+    }
+
+    /* KEYFRAMES */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(15px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.5); }
+      50% { transform: scale(1.15); }
+      100% { opacity: 1; transform: scale(1); }
     }
 
     *{box-sizing:border-box}
@@ -112,7 +127,8 @@
       box-shadow: var(--glass-shadow);
       padding: 24px;
       position:relative;
-      transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      /* Анимация появления */
+      animation: fadeSlideUp 0.5s var(--ease-smooth) backwards;
     }
     
     /* --- HERO --- */
@@ -152,10 +168,10 @@
       align-items:center;
       justify-content:center;
       gap: 10px;
-      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: all 0.25s var(--ease-spring);
       position: relative;
     }
-    .btn:active{ transform: scale(0.94); }
+    .btn:active{ transform: scale(0.92); }
     
     .btnPrimary{
       background: var(--accent-grad);
@@ -177,11 +193,12 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
-    /* --- TABBAR (Floating) --- */
+    /* --- TABBAR --- */
     .tabbar-wrap{
       display: flex;
       justify-content: center;
       margin-top: 10px;
+      animation: fadeSlideUp 0.6s var(--ease-smooth) 0.1s backwards;
     }
     .tabbar{
       background: var(--glass-bg);
@@ -284,9 +301,8 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform 0.15s var(--ease-spring);
       
-      /* ФИКС: чтобы клетки не меняли размер */
       min-width: 0;
       min-height: 0;
       overflow: hidden; 
@@ -295,14 +311,20 @@
     }
     [data-theme="dark"] .cell{ border-color: rgba(255,255,255,0.08); }
     
-    .cell:active{ transform: scale(0.9); }
+    .cell:active{ transform: scale(0.85); }
     .cell.cellDisabled{ cursor: default; transform: none; opacity: 1; }
     .cell.cellWin{
       background: var(--accent-glow);
-      border-color: var(--symX); 
+      border-color: var(--symX);
+      transform: scale(1.02); /* Легкое увеличение победных клеток */
     }
 
-    .sym{ font-weight: 800; display:block; }
+    .sym{ 
+      font-weight: 800; 
+      display:block; 
+      /* Анимация появления символа */
+      animation: popIn 0.4s var(--ease-spring) backwards;
+    }
     .symX{ color: var(--symX); filter: drop-shadow(0 2px 8px rgba(0,122,255,0.3)); }
     .symO{ color: var(--symO); filter: drop-shadow(0 2px 8px rgba(255,149,0,0.3)); }
 
@@ -324,7 +346,7 @@
       border-radius: 24px;
       text-align: center;
       box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-      transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform: scale(0.9); transition: transform 0.3s var(--ease-spring);
     }
     .modalBack.on .modal{ transform: scale(1); }
     
@@ -344,7 +366,7 @@
       background: rgba(255,255,255,0.9); color: black;
       padding: 12px 24px; border-radius: 99px; font-weight: 600;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      z-index: 200; opacity: 0; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 200; opacity: 0; transition: all 0.4s var(--ease-spring);
     }
     [data-theme="dark"] .toast{ background: rgba(40,40,40,0.9); color: white; }
     .toast.on{ opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -360,8 +382,8 @@
       <div id="screenHome" class="center-col">
         <div class="glass-panel hero">
           <div class="heroTitle">Tic-Tac-Toe</div>
-          <div style="font-size:18px; font-weight:300; opacity:0.7; margin-top:4px;">Liquid Edition</div>
-          <div class="heroMeta" id="homeMeta">Загрузка...</div>
+          <div id="subtitle" style="font-size:18px; font-weight:300; opacity:0.7; margin-top:4px;">Liquid Edition</div>
+          <div class="heroMeta" id="homeMeta">...</div>
           
           <div style="margin-top: 32px;">
             <button id="btnStart" class="btn btnPrimary" type="button">
@@ -381,7 +403,7 @@
       <div id="screenSettings" class="center-col hidden">
         <div class="glass-panel">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <div style="font-size:24px; font-weight:800;">Настройки</div>
+            <div style="font-size:24px; font-weight:800;" id="settingsTitle">Настройки</div>
           </div>
 
           <div class="grid2">
@@ -395,10 +417,7 @@
             </div>
             <div class="field">
               <div class="label" id="lblTheme">Тема</div>
-              <select id="selTheme">
-                <option value="light">Светлая</option>
-                <option value="dark">Тёмная</option>
-              </select>
+              <select id="selTheme"></select>
             </div>
           </div>
 
@@ -424,7 +443,7 @@
           </div>
 
           <div style="margin-top:10px; border-top:1px solid rgba(120,120,128,0.1); padding-top:16px;">
-            <div class="label">Имена игроков</div>
+            <div class="label" id="lblNames">Имена игроков</div>
             <div class="grid2">
                <input id="inpP1" maxlength="10" placeholder="Игрок 1" />
                <input id="inpP2" maxlength="10" placeholder="Игрок 2" />
@@ -474,8 +493,8 @@
 
   <div class="modalBack" id="modalBack">
     <div class="modal">
-      <div class="modalTitle" id="modalTitle">Заголовок</div>
-      <div class="modalText" id="modalText">Текст сообщения</div>
+      <div class="modalTitle" id="modalTitle">...</div>
+      <div class="modalText" id="modalText">...</div>
       <div class="modalBtns">
         <button class="btnModal btnCancel" id="modalCancel">Отмена</button>
         <button class="btnModal btnOk" id="modalOk">ОК</button>
@@ -486,48 +505,60 @@
   <div class="toast" id="toast">Сохранено</div>
 
 <script>
-  const BUILD = "2026.01.20.Liquid.Fix3";
+  const BUILD = "2026.01.20.Liquid.Anim";
 
   const I18N = {
     ru: {
       home:"Главная", settings:"Настройки", start:"Начать игру", save:"Сохранить",
       applied:"Настройки применены",
-      lang:"Язык", theme:"Тема", mode:"Режим", size:"Размер поля", goal:"Цель (в ряд)", ai:"Сложность ИИ",
+      lang:"Язык", theme:"Тема", 
+      themeLight:"Светлая", themeDark:"Тёмная",
+      mode:"Режим", size:"Размер поля", goal:"Цель (в ряд)", ai:"Сложность ИИ",
       aiEasy:"Лёгкая (Ошибается)", aiNormal:"Нормальная", aiHard:"Сложная", aiExpert:"Непобедимый",
       p1:"Игрок 1", p2:"Игрок 2", p3:"Игрок 3", p4:"Игрок 4",
+      playersLabel:"Имена игроков",
       modePVP:"1 vs 1", modeAI:"1 vs AI", mode3:"3 Игрока", mode4:"4 Игрока",
       exit:"Выйти", undo:"Отмена", restart:"Заново",
       turn:(n,s)=>`Ход: ${n}`,
       sub:(sz,g)=>`${sz}×${sz} • Цель: ${g}`,
       play:"Игра идёт", win:"Победа!", draw:"Ничья",
+      confirmTitle: "Подтверждение",
       confirmExit:"Выйти в меню?", confirmNew:"Начать заново?",
       ok:"Да", cancel:"Нет"
     },
     en: {
       home:"Home", settings:"Settings", start:"Start", save:"Save",
       applied:"Applied",
-      lang:"Language", theme:"Theme", mode:"Mode", size:"Size", goal:"Goal", ai:"AI Level",
+      lang:"Language", theme:"Theme", 
+      themeLight:"Light", themeDark:"Dark",
+      mode:"Mode", size:"Size", goal:"Goal", ai:"AI Level",
       aiEasy:"Easy (Mistakes)", aiNormal:"Normal", aiHard:"Hard", aiExpert:"Unbeatable",
       p1:"Player 1", p2:"Player 2", p3:"Player 3", p4:"Player 4",
+      playersLabel:"Player Names",
       modePVP:"1 vs 1", modeAI:"1 vs AI", mode3:"3 Players", mode4:"4 Players",
       exit:"Exit", undo:"Undo", restart:"Restart",
       turn:(n,s)=>`Turn: ${n}`,
       sub:(sz,g)=>`${sz}×${sz} • Goal: ${g}`,
       play:"Playing", win:"Winner!", draw:"Draw",
+      confirmTitle: "Confirm",
       confirmExit:"Exit to menu?", confirmNew:"Restart game?",
       ok:"Yes", cancel:"No"
     },
     uz: {
       home:"Bosh sahifa", settings:"Sozlamalar", start:"Boshlash", save:"Saqlash",
       applied:"Saqlandi",
-      lang:"Til", theme:"Mavzu", mode:"Rejim", size:"O‘lcham", goal:"Maqsad", ai:"AI Darajasi",
+      lang:"Til", theme:"Mavzu", 
+      themeLight:"Yorug‘", themeDark:"Qorong‘i",
+      mode:"Rejim", size:"O‘lcham", goal:"Maqsad", ai:"AI Darajasi",
       aiEasy:"Oson (Xato qiladi)", aiNormal:"O‘rta", aiHard:"Qiyin", aiExpert:"Yengilmas",
       p1:"1-o‘yinchi", p2:"2-o‘yinchi", p3:"3-o‘yinchi", p4:"4-o‘yinchi",
+      playersLabel:"O‘yinchilar",
       modePVP:"1 vs 1", modeAI:"1 vs AI", mode3:"3 Kishi", mode4:"4 Kishi",
       exit:"Chiqish", undo:"Bekor", restart:"Qayta",
       turn:(n,s)=>`Navbat: ${n}`,
       sub:(sz,g)=>`${sz}×${sz} • Maqsad: ${g}`,
       play:"O‘yin", win:"G‘alaba!", draw:"Durang",
+      confirmTitle: "Tasdiqlash",
       confirmExit:"Chiqasizmi?", confirmNew:"Qayta boshlash?",
       ok:"Ha", cancel:"Yo‘q"
     }
@@ -545,6 +576,11 @@
     {id:"normal", key:"aiNormal"},
     {id:"hard", key:"aiHard"},
     {id:"expert", key:"aiExpert"}
+  ];
+  
+  const THEMES = [
+    {id:"light", key:"themeLight"},
+    {id:"dark", key:"themeDark"}
   ];
 
   const SYMBOLS = ["X","O","△","□"];
@@ -575,11 +611,10 @@
     
     $("btnSave").onclick = saveAndApply;
     
-    // При смене языка сразу обновляем UI
     $("selLang").onchange = ()=>{ 
        settings.lang = $("selLang").value; 
        renderUI(); 
-       syncSettingsForm(); // Обновляем списки (режимы, ИИ) на новом языке
+       syncSettingsForm(); 
     };
     $("selTheme").onchange = ()=>{ settings.theme = $("selTheme").value; applyTheme(); };
     $("selSize").onchange = rebuildGoalSelect;
@@ -641,12 +676,21 @@
 
   function syncSettingsForm(){
     $("selLang").value = settings.lang;
-    $("selTheme").value = settings.theme;
     
-    // Chips (Modes) - пересоздаем, чтобы обновить язык
+    const t = I18N[settings.lang];
+
+    const selTheme = $("selTheme");
+    selTheme.innerHTML = "";
+    THEMES.forEach(th => {
+        const opt = document.createElement("option");
+        opt.value = th.id;
+        opt.textContent = t[th.key];
+        selTheme.appendChild(opt);
+    });
+    selTheme.value = settings.theme;
+    
     const chipsDiv = $("modeChips");
     chipsDiv.innerHTML = "";
-    const t = I18N[settings.lang];
     MODES.forEach(m => {
       const b = document.createElement("div");
       b.className = "chip" + (settings.mode===m.id ? " chipOn" : "");
@@ -655,9 +699,7 @@
       chipsDiv.appendChild(b);
     });
 
-    // Size
     const selSize = $("selSize");
-    // Не пересоздаем, если уже есть опции, но select value нужно обновить
     if(selSize.options.length === 0) {
         for(let i=3; i<=10; i++) {
            const opt = document.createElement("option");
@@ -668,7 +710,6 @@
     selSize.value = settings.size;
     rebuildGoalSelect();
     
-    // AI Options - пересоздаем для перевода
     const selAI = $("selAI");
     selAI.innerHTML = "";
     AI_LEVELS.forEach(lvl => {
@@ -681,7 +722,6 @@
 
     $("aiRow").style.display = (settings.mode==="ai") ? "block" : "none";
 
-    // Inputs
     $("inpP1").value = settings.p1;
     $("inpP2").value = settings.p2;
     $("inpP3").value = settings.p3;
@@ -694,16 +734,14 @@
     const selGoal = $("selGoal");
     selGoal.innerHTML = "";
     
-    // ВОЗВРАЩЕНО: Цель от 3 до размера поля (без ограничений)
     for(let i=3; i<=sz; i++){
        const opt = document.createElement("option");
        opt.value=i; opt.textContent=i;
        selGoal.appendChild(opt);
     }
     
-    // Пытаемся сохранить текущее значение, если оно валидно
     if(settings.goal <= sz && settings.goal >= 3) selGoal.value = settings.goal;
-    else selGoal.value = Math.min(sz, 5); // дефолт
+    else selGoal.value = Math.min(sz, 5); 
   }
 
   function saveAndApply(){
@@ -933,12 +971,14 @@
      $("tabSettings").textContent = t.settings;
      $("tabHome2").textContent = t.home;
      $("tabSettings2").textContent = t.settings;
+     $("settingsTitle").textContent = t.settings;
      $("lblLang").textContent = t.lang;
      $("lblTheme").textContent = t.theme;
      $("lblMode").textContent = t.mode;
      $("lblSize").textContent = t.size;
      $("lblGoal").textContent = t.goal;
      $("lblAI").textContent = t.ai;
+     $("lblNames").textContent = t.playersLabel; 
      
      $("inpP1").placeholder = t.p1;
      $("inpP2").placeholder = t.p2;
@@ -963,7 +1003,12 @@
 
   function modalConfirm(txt){
      return new Promise(resolve=>{
+        const t = I18N[settings.lang];
+        $("modalTitle").textContent = t.confirmTitle; 
         $("modalText").textContent = txt;
+        $("modalCancel").textContent = t.cancel;
+        $("modalOk").textContent = t.ok;
+
         $("modalBack").classList.add("on");
         $("modalOk").onclick = ()=>{ $("modalBack").classList.remove("on"); resolve(true); };
         $("modalCancel").onclick = ()=>{ $("modalBack").classList.remove("on"); resolve(false); };
