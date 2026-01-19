@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -12,8 +12,9 @@
 
   <style>
     :root{
-      --safeTop: env(safe-area-inset-top, 0px);
-      --safeBottom: env(safe-area-inset-bottom, 0px);
+      /* Увеличили базовый отступ, чтобы не наезжать на шапку Telegram */
+      --safeTop: env(safe-area-inset-top, 20px);
+      --safeBottom: env(safe-area-inset-bottom, 20px);
 
       /* Жидкие цвета iOS 26 */
       --accent-grad: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%);
@@ -105,7 +106,8 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: calc(var(--safeTop) + 20px) 16px calc(var(--safeBottom) + 20px);
+      /* Увеличил отступ сверху до 30px + безопасная зона, чтобы не наезжало на шапку Telegram */
+      padding: calc(var(--safeTop) + 30px) 16px calc(var(--safeBottom) + 20px);
       position: relative;
       z-index: 10;
     }
@@ -343,7 +345,8 @@
       background: rgba(0,0,0,0.3);
       backdrop-filter: blur(5px);
       display:none; align-items:center; justify-content:center;
-      opacity: 0; transition: opacity 0.3s;
+      padding:16px;
+      z-index: 50;
     }
     .modalBack.on{ display:flex; opacity: 1; }
     
@@ -373,14 +376,26 @@
     .hidden{ display: none !important; }
     .center-col{ display: flex; flex-direction: column; align-items: center; width: 100%; }
 
+    /* TOAST (ИСПРАВЛЕНО: ПЕРЕМЕЩЕНО ВНИЗ) */
     .toast{
-      position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
-      background: rgba(255,255,255,0.9); color: black;
-      padding: 12px 24px; border-radius: 99px; font-weight: 600;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      z-index: 200; opacity: 0; transition: all 0.4s var(--ease-spring);
+      position: fixed; 
+      left: 50%;
+      /* Ставим снизу, чтобы не конфликтовать с Островом и Шапкой */
+      bottom: 90px; 
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2000;
+      background: rgba(255,255,255,0.95);
+      color: black;
+      padding: 12px 24px;
+      border-radius: 99px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transition: all 0.4s var(--ease-spring);
+      backdrop-filter: blur(10px);
     }
-    [data-theme="dark"] .toast{ background: rgba(40,40,40,0.9); color: white; }
+    [data-theme="dark"] .toast{ background: rgba(40,40,40,0.95); color: white; }
     .toast.on{ opacity: 1; transform: translateX(-50%) translateY(0); }
 
   </style>
@@ -526,18 +541,10 @@
   <div class="toast" id="toast">Сохранено</div>
 
 <script>
-  const BUILD = "2026.01.20.SoundToggle";
+  const BUILD = "2026.01.20.FixUI";
 
   /* SVG ICONS */
   const iconSoundOn = `<svg viewBox="0 0 24 24"><path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zm-4 0h-2.5l-5 5h-3v7.54h3l5 5h2.5v-17.54zm-2.5 15.54l-4-4h-2v-5.54h2l4-4v13.54zm11-7.77c0-1.79-1.02-3.34-2.5-4.04v8.08c1.48-.7 2.5-2.25 2.5-4.04z"/></svg>`;
-  const iconSoundOff = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51c.66-1.24 1.03-2.65 1.03-4.15 0-4.28-2.99-7.86-7-8.76v2.06c2.89.86 5 3.54 5 6.7zm-19-8l2.39 2.39-2.39 2.39 1.41 1.41 2.39-2.39 2.39 2.39 1.41-1.41-2.39-2.39 2.39-2.39-1.41-1.41-2.39 2.39-2.39-2.39-1.41 1.41zm16.97 12l2.03 2.03-1.41 1.41-2.03-2.03-1.41 1.41-1.41-1.41 2.03-2.03-2.03-2.03 1.41-1.41 2.03 2.03 1.41-1.41 1.41 1.41zM10 4.23l-5 5h-3v7.54h3l1.83 1.83 6.17 6.17v-7.37l-6.17-6.17v-7z"/></svg>`; // Simplified crossed sound
-
-  // Clean SVG for Off
-  const iconMute = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51c.66-1.24 1.03-2.65 1.03-4.15 0-4.28-2.99-7.86-7-8.76v2.06c2.89.86 5 3.54 5 6.7zm-2.59-8.49l-13.29 13.29 1.41 1.41 13.29-13.29-1.41-1.41zm-10.41 2.49l5 5v-7.54l-5 5v-2.46zm-3 2.46h3l.59-.59-2.59-2.59v3.18zm13 9.77v-2.06c.64-.19 1.23-.48 1.76-.85l-1.5-1.5c-.09.6-.33 1.15-.69 1.63l.43 2.78zm-3-3.21v-1.79l-1.79-1.79-.21.21v1.58l2 2z"/></svg>`; 
-  // Better custom mute icon
-  const iconSoundMuteFixed = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51c.66-1.24 1.03-2.65 1.03-4.15 0-4.28-2.99-7.86-7-8.76v2.06c2.89.86 5 3.54 5 6.7zm-2.59-8.49l-13.29 13.29 1.41 1.41 13.29-13.29-1.41-1.41zm-10.41 2.49l5 5v-7.54l-5 5v-2.46zm-3 2.46h3l.59-.59-2.59-2.59v3.18z"/></svg>`;
-
-  // A simple Speaker + X icon
   const iconSpk = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
   const iconSpkOff = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51c.66-1.24 1.03-2.65 1.03-4.15 0-4.28-2.99-7.86-7-8.76v2.06c2.89.86 5 3.54 5 6.7zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`;
 
