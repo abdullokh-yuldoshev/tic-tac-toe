@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <title>Tic-Tac-Toe Liquid</title>
+  <title>Tic-Tac-Toe Liquid Premium</title>
 
   <style>
     :root{
@@ -91,6 +91,7 @@
       background-attachment: fixed;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
+      user-select: none;
     }
 
     button, .chip, .tab, .cell{
@@ -105,6 +106,16 @@
       align-items:center;
       justify-content:center;
       padding: calc(var(--safeTop) + 20px) 16px calc(var(--safeBottom) + 20px);
+      position: relative;
+      z-index: 10;
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 999;
     }
 
     .stage{
@@ -127,7 +138,6 @@
       box-shadow: var(--glass-shadow);
       padding: 24px;
       position:relative;
-      /* Анимация появления */
       animation: fadeSlideUp 0.5s var(--ease-smooth) backwards;
     }
     
@@ -316,13 +326,12 @@
     .cell.cellWin{
       background: var(--accent-glow);
       border-color: var(--symX);
-      transform: scale(1.02); /* Легкое увеличение победных клеток */
+      transform: scale(1.02);
     }
 
     .sym{ 
       font-weight: 800; 
       display:block; 
-      /* Анимация появления символа */
       animation: popIn 0.4s var(--ease-spring) backwards;
     }
     .symX{ color: var(--symX); filter: drop-shadow(0 2px 8px rgba(0,122,255,0.3)); }
@@ -358,6 +367,9 @@
     .btnCancel{ background: rgba(120, 120, 128, 0.12); color: var(--text); }
     .btnOk{ background: var(--accent-grad); color: white; }
 
+    /* Sound Icon */
+    .icon-wrap svg{ width:20px; height:20px; fill:currentColor; }
+
     .hidden{ display: none !important; }
     .center-col{ display: flex; flex-direction: column; align-items: center; width: 100%; }
 
@@ -375,6 +387,7 @@
 </head>
 
 <body>
+  <canvas id="confettiCanvas"></canvas>
 
   <div class="app">
     <div class="stage">
@@ -419,6 +432,14 @@
               <div class="label" id="lblTheme">Тема</div>
               <select id="selTheme"></select>
             </div>
+          </div>
+
+          <div class="field">
+             <div class="label" id="lblSound">Звук</div>
+             <button id="btnSoundToggle" class="btn btnSec" style="justify-content: space-between; width:100%;">
+                <span id="soundStatusText">Включен</span>
+                <span id="soundIcon" class="icon-wrap"></span>
+             </button>
           </div>
 
           <div class="field">
@@ -505,7 +526,126 @@
   <div class="toast" id="toast">Сохранено</div>
 
 <script>
-  const BUILD = "2026.01.20.Liquid.Anim";
+  const BUILD = "2026.01.20.SoundToggle";
+
+  /* SVG ICONS */
+  const iconSoundOn = `<svg viewBox="0 0 24 24"><path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zm-4 0h-2.5l-5 5h-3v7.54h3l5 5h2.5v-17.54zm-2.5 15.54l-4-4h-2v-5.54h2l4-4v13.54zm11-7.77c0-1.79-1.02-3.34-2.5-4.04v8.08c1.48-.7 2.5-2.25 2.5-4.04z"/></svg>`;
+  const iconSoundOff = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51c.66-1.24 1.03-2.65 1.03-4.15 0-4.28-2.99-7.86-7-8.76v2.06c2.89.86 5 3.54 5 6.7zm-19-8l2.39 2.39-2.39 2.39 1.41 1.41 2.39-2.39 2.39 2.39 1.41-1.41-2.39-2.39 2.39-2.39-1.41-1.41-2.39 2.39-2.39-2.39-1.41 1.41zm16.97 12l2.03 2.03-1.41 1.41-2.03-2.03-1.41 1.41-1.41-1.41 2.03-2.03-2.03-2.03 1.41-1.41 2.03 2.03 1.41-1.41 1.41 1.41zM10 4.23l-5 5h-3v7.54h3l1.83 1.83 6.17 6.17v-7.37l-6.17-6.17v-7z"/></svg>`; // Simplified crossed sound
+
+  // Clean SVG for Off
+  const iconMute = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51c.66-1.24 1.03-2.65 1.03-4.15 0-4.28-2.99-7.86-7-8.76v2.06c2.89.86 5 3.54 5 6.7zm-2.59-8.49l-13.29 13.29 1.41 1.41 13.29-13.29-1.41-1.41zm-10.41 2.49l5 5v-7.54l-5 5v-2.46zm-3 2.46h3l.59-.59-2.59-2.59v3.18zm13 9.77v-2.06c.64-.19 1.23-.48 1.76-.85l-1.5-1.5c-.09.6-.33 1.15-.69 1.63l.43 2.78zm-3-3.21v-1.79l-1.79-1.79-.21.21v1.58l2 2z"/></svg>`; 
+  // Better custom mute icon
+  const iconSoundMuteFixed = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51c.66-1.24 1.03-2.65 1.03-4.15 0-4.28-2.99-7.86-7-8.76v2.06c2.89.86 5 3.54 5 6.7zm-2.59-8.49l-13.29 13.29 1.41 1.41 13.29-13.29-1.41-1.41zm-10.41 2.49l5 5v-7.54l-5 5v-2.46zm-3 2.46h3l.59-.59-2.59-2.59v3.18z"/></svg>`;
+
+  // A simple Speaker + X icon
+  const iconSpk = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
+  const iconSpkOff = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51c.66-1.24 1.03-2.65 1.03-4.15 0-4.28-2.99-7.86-7-8.76v2.06c2.89.86 5 3.54 5 6.7zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`;
+
+
+  /* --- 1. SOUND SYSTEM --- */
+  const Sfx = {
+    ctx: null,
+    init: function(){
+      if(!this.ctx){
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if(this.ctx.state === 'suspended'){
+        this.ctx.resume();
+      }
+    },
+    playTone: function(freq, type, duration, vol=0.1){
+      if(!settings.sound) return; // CHECK SETTINGS
+      if(!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    },
+    pop: function(){
+      this.init();
+      this.playTone(600, 'sine', 0.1, 0.15);
+      setTimeout(()=>this.playTone(800, 'sine', 0.1, 0.1), 50);
+    },
+    click: function(){
+      this.init();
+      this.playTone(400, 'triangle', 0.05, 0.05);
+    },
+    win: function(){
+      this.init();
+      const now = this.ctx.currentTime;
+      [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+         setTimeout(() => this.playTone(f, 'sine', 0.4, 0.2), i * 120);
+      });
+    }
+  };
+
+  /* --- 2. HAPTIC FEEDBACK --- */
+  const Haptic = {
+    trigger: function(type = 'light'){
+      if(!navigator.vibrate) return;
+      if(type==='light') navigator.vibrate(5);
+      if(type==='medium') navigator.vibrate(15);
+      if(type==='heavy') navigator.vibrate([20, 30, 20]);
+    }
+  };
+
+  /* --- 3. CONFETTI SYSTEM --- */
+  const Confetti = {
+    canvas: document.getElementById('confettiCanvas'),
+    ctx: document.getElementById('confettiCanvas').getContext('2d'),
+    particles: [],
+    animId: null,
+    
+    resize: function(){
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+    },
+    start: function(){
+      this.resize();
+      this.particles = [];
+      const colors = ['#00C6FF', '#0072FF', '#FF9500', '#FF2D55', '#AF52DE'];
+      for(let i=0; i<100; i++){
+        this.particles.push({
+          x: this.canvas.width/2,
+          y: this.canvas.height/2,
+          vx: (Math.random()-0.5) * 15,
+          vy: (Math.random()-0.5) * 15 - 5,
+          color: colors[Math.floor(Math.random()*colors.length)],
+          size: Math.random()*8 + 4,
+          life: 1.0
+        });
+      }
+      if(!this.animId) this.loop();
+    },
+    loop: function(){
+      this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height);
+      let active = false;
+      this.particles.forEach(p => {
+         p.x += p.vx;
+         p.y += p.vy;
+         p.vy += 0.3; // gravity
+         p.life -= 0.015;
+         if(p.life > 0){
+            active = true;
+            this.ctx.globalAlpha = p.life;
+            this.ctx.fillStyle = p.color;
+            this.ctx.fillRect(p.x, p.y, p.size, p.size);
+         }
+      });
+      if(active) this.animId = requestAnimationFrame(()=>this.loop());
+      else this.animId = null;
+    }
+  };
+  window.addEventListener('resize', ()=>Confetti.resize());
+
+
+  /* --- LOGIC --- */
 
   const I18N = {
     ru: {
@@ -513,6 +653,7 @@
       applied:"Настройки применены",
       lang:"Язык", theme:"Тема", 
       themeLight:"Светлая", themeDark:"Тёмная",
+      sound:"Звук", soundOn:"Включен", soundOff:"Выключен",
       mode:"Режим", size:"Размер поля", goal:"Цель (в ряд)", ai:"Сложность ИИ",
       aiEasy:"Лёгкая (Ошибается)", aiNormal:"Нормальная", aiHard:"Сложная", aiExpert:"Непобедимый",
       p1:"Игрок 1", p2:"Игрок 2", p3:"Игрок 3", p4:"Игрок 4",
@@ -531,6 +672,7 @@
       applied:"Applied",
       lang:"Language", theme:"Theme", 
       themeLight:"Light", themeDark:"Dark",
+      sound:"Sound", soundOn:"On", soundOff:"Off",
       mode:"Mode", size:"Size", goal:"Goal", ai:"AI Level",
       aiEasy:"Easy (Mistakes)", aiNormal:"Normal", aiHard:"Hard", aiExpert:"Unbeatable",
       p1:"Player 1", p2:"Player 2", p3:"Player 3", p4:"Player 4",
@@ -549,6 +691,7 @@
       applied:"Saqlandi",
       lang:"Til", theme:"Mavzu", 
       themeLight:"Yorug‘", themeDark:"Qorong‘i",
+      sound:"Ovoz", soundOn:"Yonilgan", soundOff:"O‘chirilgan",
       mode:"Rejim", size:"O‘lcham", goal:"Maqsad", ai:"AI Darajasi",
       aiEasy:"Oson (Xato qiladi)", aiNormal:"O‘rta", aiHard:"Qiyin", aiExpert:"Yengilmas",
       p1:"1-o‘yinchi", p2:"2-o‘yinchi", p3:"3-o‘yinchi", p4:"4-o‘yinchi",
@@ -603,13 +746,29 @@
     applyTheme();
     renderUI();
     
-    $("btnStart").onclick = startNewGame;
-    $("tabHome").onclick = ()=>go("home");
-    $("tabSettings").onclick = ()=>go("settings");
-    $("tabHome2").onclick = ()=>go("home");
-    $("tabSettings2").onclick = ()=>go("settings");
+    $("btnStart").onclick = () => {
+      Sfx.click(); 
+      Haptic.trigger('light');
+      startNewGame();
+    };
+
+    $("tabHome").onclick = ()=>{ Sfx.click(); go("home"); };
+    $("tabSettings").onclick = ()=>{ Sfx.click(); go("settings"); };
+    $("tabHome2").onclick = ()=>{ Sfx.click(); go("home"); };
+    $("tabSettings2").onclick = ()=>{ Sfx.click(); go("settings"); };
     
-    $("btnSave").onclick = saveAndApply;
+    $("btnSave").onclick = () => {
+       Sfx.click(); Haptic.trigger('medium');
+       saveAndApply();
+    };
+    
+    // NEW: Sound Toggle Logic
+    $("btnSoundToggle").onclick = () => {
+       settings.sound = !settings.sound; // toggle
+       Sfx.click();
+       renderUI(); // refresh icon
+       saveSettings(); // save immediately
+    };
     
     $("selLang").onchange = ()=>{ 
        settings.lang = $("selLang").value; 
@@ -620,14 +779,19 @@
     $("selSize").onchange = rebuildGoalSelect;
     
     $("btnExit").onclick = async ()=>{
+      Sfx.click();
       if(await modalConfirm(I18N[settings.lang].confirmExit)) {
         board=[]; gameOver=false; saveGame(); go("home");
       }
     };
     $("btnRestart").onclick = async ()=>{
+       Sfx.click();
        if(await modalConfirm(I18N[settings.lang].confirmNew)) startNewGame();
     };
-    $("btnUndo").onclick = doUndo;
+    $("btnUndo").onclick = () => {
+      Sfx.click(); Haptic.trigger('light');
+      doUndo();
+    };
     
     const g = loadGame();
     if(g && g.board.length > 0 && !g.gameOver){
@@ -695,7 +859,10 @@
       const b = document.createElement("div");
       b.className = "chip" + (settings.mode===m.id ? " chipOn" : "");
       b.textContent = t[m.key];
-      b.onclick = ()=>{ settings.mode=m.id; syncSettingsForm(); };
+      b.onclick = ()=>{ 
+        Sfx.click(); Haptic.trigger('light');
+        settings.mode=m.id; syncSettingsForm(); 
+      };
       chipsDiv.appendChild(b);
     });
 
@@ -826,6 +993,9 @@
   function makeMove(idx){
     if(gameOver || board[idx]) return;
     
+    Sfx.pop(); 
+    Haptic.trigger('light'); 
+
     const pIdx = history.length % getPlayersCount();
     board[idx] = SYMBOLS[pIdx];
     history.push({idx, p:pIdx});
@@ -906,6 +1076,12 @@
     const res = checkWinFull(board, settings.size, settings.goal);
     if(res.win){
        gameOver=true; winLine=res.line;
+       
+       // WIN EFFECTS
+       Sfx.win();
+       Haptic.trigger('heavy');
+       Confetti.start();
+
     } else if(history.length === settings.size*settings.size){
        gameOver=true;
     }
@@ -953,7 +1129,8 @@
     return defaultSettings();
   }
   function defaultSettings(){
-    return {lang:"ru", theme:"light", mode:"pvp", size:3, goal:3, ai:"expert", p1:"Игрок 1", p2:"Игрок 2", p3:"Игрок 3", p4:"Игрок 4"};
+    // sound: true by default
+    return {lang:"ru", theme:"light", mode:"pvp", size:3, goal:3, ai:"expert", p1:"Игрок 1", p2:"Игрок 2", p3:"Игрок 3", p4:"Игрок 4", sound:true};
   }
   function saveSettings(){ localStorage.setItem(storeKey, JSON.stringify(settings)); }
   
@@ -978,7 +1155,12 @@
      $("lblSize").textContent = t.size;
      $("lblGoal").textContent = t.goal;
      $("lblAI").textContent = t.ai;
-     $("lblNames").textContent = t.playersLabel; 
+     $("lblNames").textContent = t.playersLabel;
+     
+     // SOUND BUTTON
+     $("lblSound").textContent = t.sound;
+     $("soundStatusText").textContent = settings.sound ? t.soundOn : t.soundOff;
+     $("soundIcon").innerHTML = settings.sound ? iconSpk : iconSpkOff;
      
      $("inpP1").placeholder = t.p1;
      $("inpP2").placeholder = t.p2;
@@ -1010,8 +1192,19 @@
         $("modalOk").textContent = t.ok;
 
         $("modalBack").classList.add("on");
-        $("modalOk").onclick = ()=>{ $("modalBack").classList.remove("on"); resolve(true); };
-        $("modalCancel").onclick = ()=>{ $("modalBack").classList.remove("on"); resolve(false); };
+        
+        // click sound
+        const okBtn = $("modalOk");
+        const noBtn = $("modalCancel");
+        
+        okBtn.onclick = ()=>{ 
+            Sfx.click(); 
+            $("modalBack").classList.remove("on"); resolve(true); 
+        };
+        noBtn.onclick = ()=>{ 
+            Sfx.click(); 
+            $("modalBack").classList.remove("on"); resolve(false); 
+        };
      });
   }
 
